@@ -1,0 +1,345 @@
+/* ===================================
+   Strength Control Power
+   Responsive Stylesheet
+=================================== */
+
+
+/* ---------- Tablet Devices ----------
+   768px - 1024px
+----------------------------------- */
+
+@media (max-width: 1024px) {
+
+
+    .container {
+
+        width: 92%;
+
+    }
+
+
+
+    #hero h2,
+    .page-hero h2 {
+
+        font-size: 36px;
+
+    }
+
+
+
+    #hero p,
+    .page-hero p {
+
+        font-size: 18px;
+
+    }
+
+
+
+    #features .container {
+
+        grid-template-columns:
+
+        repeat(2, 1fr);
+
+    }
+
+
+
+    .exercise-grid {
+
+        grid-template-columns:
+
+        repeat(2, 1fr);
+
+    }
+
+
+
+}
+
+
+
+/* ---------- Mobile Devices ----------
+   below 768px
+----------------------------------- */
+
+@media (max-width: 768px) {
+
+
+
+    body {
+
+        font-size: 16px;
+
+    }
+
+
+
+
+    /* Header */
+
+
+    header h1 {
+
+        font-size: 28px;
+
+    }
+
+
+
+    nav ul {
+
+
+        flex-direction: column;
+
+        gap: 12px;
+
+        text-align: center;
+
+    }
+
+
+
+    nav a {
+
+        display: block;
+
+        padding: 8px;
+
+    }
+
+
+
+
+
+    /* Hero */
+
+
+    #hero,
+    .page-hero {
+
+
+        min-height: 350px;
+
+        padding: 60px 20px;
+
+
+    }
+
+
+
+    #hero h2,
+    .page-hero h2 {
+
+
+        font-size: 28px;
+
+    }
+
+
+
+    #hero p,
+    .page-hero p {
+
+
+        font-size: 16px;
+
+    }
+
+
+
+
+
+
+    /* Sections */
+
+
+    section {
+
+        padding: 40px 0;
+
+    }
+
+
+
+    .container h2 {
+
+        font-size: 26px;
+
+    }
+
+
+
+
+    /* Feature Cards */
+
+
+    #features .container {
+
+
+        grid-template-columns:
+
+        1fr;
+
+
+    }
+
+
+
+
+    article {
+
+
+        padding: 20px;
+
+    }
+
+
+
+
+
+    /* Two Column */
+
+
+    .two-column {
+
+
+        grid-template-columns:
+
+        1fr;
+
+
+    }
+
+
+
+
+
+
+    /* Exercise Cards */
+
+
+    .exercise-grid {
+
+
+        grid-template-columns:
+
+        1fr;
+
+
+    }
+
+
+
+
+
+    /* Contact */
+
+
+    .contact-info {
+
+
+        grid-template-columns:
+
+        1fr;
+
+
+    }
+
+
+
+    input,
+    textarea,
+    button {
+
+
+        font-size: 16px;
+
+    }
+
+
+
+
+
+}
+
+
+
+
+
+/* ---------- Small Phones ----------
+   below 480px
+----------------------------------- */
+
+@media (max-width: 480px) {
+
+
+
+    .container {
+
+
+        width: 95%;
+
+
+    }
+
+
+
+    header h1 {
+
+
+        font-size: 24px;
+
+
+    }
+
+
+
+
+    #hero h2,
+    .page-hero h2 {
+
+
+        font-size: 24px;
+
+
+    }
+
+
+
+
+    .button {
+
+
+        width: 100%;
+
+        text-align: center;
+
+
+    }
+
+
+
+    ul,
+    ol {
+
+
+        margin-left: 18px;
+
+
+    }
+
+
+
+    footer {
+
+
+        font-size: 14px;
+
+
+    }
+
+
+}
