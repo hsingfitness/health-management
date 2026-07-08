@@ -1,0 +1,356 @@
+/* ===================================
+   Strength Control Power
+   Layout Stylesheet
+=================================== */
+
+
+/* ---------- Main Container ---------- */
+
+
+.container {
+
+    width: 90%;
+
+    max-width: 1200px;
+
+    margin: 0 auto;
+
+}
+
+
+
+/* ---------- Header Layout ---------- */
+
+
+header .container {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+}
+
+
+
+nav {
+
+    width: 100%;
+
+}
+
+
+
+nav ul {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+}
+
+
+
+
+
+/* ---------- Hero Layout ---------- */
+
+
+#hero,
+.page-hero {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    min-height: 450px;
+
+}
+
+
+
+.hero-content {
+
+    max-width: 800px;
+
+    text-align: center;
+
+}
+
+
+
+
+
+/* ---------- Three Pillars Layout ---------- */
+
+
+#features .container {
+
+
+    display: grid;
+
+    grid-template-columns:
+
+    repeat(3, 1fr);
+
+
+    gap: 30px;
+
+}
+
+
+
+#features article {
+
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: space-between;
+
+}
+
+
+
+
+
+/* ---------- Content Layout ---------- */
+
+
+main .container {
+
+
+    max-width: 900px;
+
+}
+
+
+
+main section:nth-child(even) {
+
+
+    background-color: #f8f8f8;
+
+}
+
+
+
+
+
+/* ---------- Exercise Cards ---------- */
+
+
+.exercise-grid {
+
+
+    display: grid;
+
+    grid-template-columns:
+
+    repeat(3, 1fr);
+
+
+    gap: 25px;
+
+}
+
+
+
+.exercise-card {
+
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: space-between;
+
+}
+
+
+
+
+
+/* ---------- Contact Page Layout ---------- */
+
+
+.contact-info {
+
+
+    display: grid;
+
+    grid-template-columns:
+
+    repeat(3, 1fr);
+
+
+    gap: 25px;
+
+    margin: 30px 0;
+
+}
+
+
+
+.contact-form {
+
+
+    display: flex;
+
+    flex-direction: column;
+
+}
+
+
+
+
+
+/* ---------- Footer Layout ---------- */
+
+
+footer .container {
+
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+}
+
+
+
+
+
+/* ---------- Two Column Layout ---------- */
+
+
+.two-column {
+
+
+    display: grid;
+
+    grid-template-columns:
+
+    repeat(2, 1fr);
+
+
+    gap: 40px;
+
+    align-items: center;
+
+}
+
+
+
+
+
+/* ---------- Image Layout ---------- */
+
+
+.image-container {
+
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+}
+
+
+
+.image-container img {
+
+
+    max-width: 100%;
+
+    height: auto;
+
+}
+
+
+
+
+
+/* ---------- Mobile Layout ---------- */
+
+
+@media(max-width:900px){
+
+
+    #features .container {
+
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+
+    .exercise-grid {
+
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+
+    .contact-info {
+
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+
+    .two-column {
+
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+}
+
+
+
+
+
+@media(max-width:600px){
+
+
+    .container {
+
+
+        width: 95%;
+
+    }
+
+
+
+    nav ul {
+
+
+        flex-direction: column;
+
+    }
+
+
+
+}
