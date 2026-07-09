@@ -93,17 +93,49 @@ header {
 header .container {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.brand {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.65rem;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+}
+
+.brand:hover {
+    color: #ffffff;
+}
+
+.brand-logo {
+    display: inline-grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    place-items: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand), #35d0ff);
+    box-shadow: 0 8px 20px rgba(0, 102, 204, 0.35);
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+
+.brand-name {
+    font-size: 1.25rem;
+    font-weight: 800;
+    text-transform: uppercase;
 }
 
 nav {
-    width: 100%;
+    flex: 1 1 auto;
 }
 
 nav ul {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: flex-end;
     gap: 0.45rem;
     margin: 0;
     list-style: none;
@@ -129,6 +161,21 @@ nav a.active {
     border-color: var(--brand);
     color: #ffffff;
     transform: translateY(-1px);
+}
+
+@media (max-width: 760px) {
+    header .container {
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    nav {
+        width: 100%;
+    }
+
+    nav ul {
+        justify-content: center;
+    }
 }
 
 #hero,
