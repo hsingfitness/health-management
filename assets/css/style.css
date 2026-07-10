@@ -67,7 +67,8 @@ nav a:hover, nav a.active { color: var(--brand); }
     position: absolute;
     top: calc(100% + 0.75rem);
     left: 0;
-    display: grid;
+    display: flex;
+    flex-direction: column;
     min-width: 170px;
     padding: 0.55rem;
     border: 1px solid var(--line);
@@ -88,8 +89,8 @@ nav a:hover, nav a.active { color: var(--brand); }
 }
 
 .dropdown-menu a {
+    display: block;
     width: 100%;
-    justify-content: flex-start;
     padding: 0.65rem 0.75rem;
     border-radius: 0.65rem;
 }
