@@ -1,7 +1,7 @@
 /* ===================================
-   Health Management
-   Modern SaaS Landing Page
+   AI Health Management Landing Page
 =================================== */
+
 
 :root{
 
@@ -28,21 +28,27 @@
 
 }
 
+
+/* ===============================
+   RESET
+=============================== */
+
+
 *{
 
     margin:0;
-
     padding:0;
-
     box-sizing:border-box;
 
 }
+
 
 html{
 
     scroll-behavior:smooth;
 
 }
+
 
 body{
 
@@ -54,9 +60,8 @@ body{
 
     line-height:1.6;
 
-    font-size:16px;
-
 }
+
 
 .container{
 
@@ -66,51 +71,6 @@ body{
 
 }
 
-/* ===================================
-   Typography
-=================================== */
-
-h1{
-
-    font-size:clamp(3rem,6vw,5rem);
-
-    font-weight:900;
-
-    line-height:1.05;
-
-    letter-spacing:-2px;
-
-}
-
-h2{
-
-    font-size:clamp(2rem,4vw,3.4rem);
-
-    font-weight:800;
-
-    line-height:1.15;
-
-    color:var(--ink);
-
-}
-
-h3{
-
-    font-size:1.35rem;
-
-    font-weight:700;
-
-    color:var(--navy);
-
-}
-
-p{
-
-    color:var(--muted);
-
-    font-size:1rem;
-
-}
 
 a{
 
@@ -118,9 +78,58 @@ a{
 
 }
 
-/* ===================================
-   Header
-=================================== */
+
+
+/* ===============================
+   TYPOGRAPHY
+=============================== */
+
+
+h1{
+
+    font-size:clamp(3rem,6vw,5rem);
+
+    line-height:1.05;
+
+    font-weight:900;
+
+    letter-spacing:-2px;
+
+}
+
+
+h2{
+
+    font-size:clamp(2rem,4vw,3rem);
+
+    color:var(--ink);
+
+    font-weight:800;
+
+}
+
+
+h3{
+
+    color:var(--navy);
+
+}
+
+
+p{
+
+    color:var(--muted);
+
+}
+
+
+
+
+
+/* ===============================
+   1. HEADER / NAVIGATION
+=============================== */
+
 
 header{
 
@@ -130,11 +139,13 @@ header{
 
     z-index:999;
 
-    background:#fff;
+    background:white;
 
-    border-bottom:1px solid #ECEFF4;
+    border-bottom:1px solid var(--line);
 
 }
+
+
 
 .nav-container{
 
@@ -142,15 +153,13 @@ header{
 
     display:flex;
 
-    align-items:center;
-
     justify-content:space-between;
+
+    align-items:center;
 
 }
 
-/* ===================================
-   Logo
-=================================== */
+
 
 .brand{
 
@@ -160,35 +169,23 @@ header{
 
     gap:12px;
 
-    color:var(--ink);
-
-    font-size:1.25rem;
+    font-size:1.3rem;
 
     font-weight:700;
 
+    color:var(--ink);
+
 }
+
+
 
 .brand-logo{
 
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
+    font-size:28px;
 
 }
 
-.brand-logo svg{
 
-    width:24px;
-
-    height:24px;
-
-}
-
-/* ===================================
-   Right Navigation
-=================================== */
 
 .nav-right{
 
@@ -196,9 +193,11 @@ header{
 
     align-items:center;
 
-    gap:42px;
+    gap:35px;
 
 }
+
+
 
 nav ul{
 
@@ -206,229 +205,107 @@ nav ul{
 
     list-style:none;
 
-    gap:36px;
+    gap:30px;
 
 }
 
-nav li{
 
-    position:relative;
-
-}
 
 nav a{
 
     color:var(--ink);
 
-    font-weight:500;
-
-    transition:var(--transition);
+    font-weight:600;
 
 }
 
-nav a:hover{
 
-    color:var(--brand);
 
-}
-
+nav a:hover,
 nav a.active{
 
     color:var(--brand);
 
 }
 
-/* ===================================
-   Dropdown
-=================================== */
 
-.dropdown-menu{
-
-    position:absolute;
-
-    top:45px;
-
-    left:0;
-
-    min-width:180px;
-
-    background:#fff;
-
-    border:1px solid var(--line);
-
-    border-radius:14px;
-
-    box-shadow:var(--shadow);
-
-    display:none;
-
-    overflow:hidden;
-
-}
-
-.dropdown:hover .dropdown-menu{
-
-    display:block;
-
-}
-
-.dropdown-menu a{
-
-    display:block;
-
-    padding:12px 18px;
-
-}
-
-.dropdown-menu a:hover{
-
-    background:#F5FAF8;
-
-}
-
-/* ===================================
-   Navigation Buttons
-=================================== */
 
 .nav-actions{
 
     display:flex;
 
-    align-items:center;
+    gap:15px;
 
-    gap:16px;
+    align-items:center;
 
 }
 
+
+
 .btn-login{
 
-    display:inline-flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    padding:12px 28px;
+    padding:12px 26px;
 
     border-radius:999px;
 
     background:var(--brand);
 
-    color:#fff;
+    color:white;
 
     font-weight:700;
 
-    transition:var(--transition);
-
 }
+
+
 
 .btn-login:hover{
 
     background:var(--brand-dark);
 
-    color:#fff;
-
 }
+
+
 
 .btn-language{
 
-    display:flex;
-
-    align-items:center;
-
-    gap:8px;
-
-    height:42px;
-
-    padding:0 18px;
+    padding:11px 18px;
 
     border-radius:999px;
 
-    background:#fff;
-
     border:1px solid var(--line);
+
+    background:white;
 
     cursor:pointer;
 
-    font-size:.95rem;
-
-    font-weight:600;
-
 }
 
-.language-dropdown{
 
-    position:relative;
 
-}
 
-.language-menu{
 
-    position:absolute;
+/* ===============================
+   2. HERO SECTION
+=============================== */
 
-    top:50px;
-
-    right:0;
-
-    width:180px;
-
-    background:#fff;
-
-    border:1px solid var(--line);
-
-    border-radius:14px;
-
-    box-shadow:var(--shadow);
-
-    display:none;
-
-    overflow:hidden;
-
-}
-
-.language-dropdown:hover .language-menu{
-
-    display:block;
-
-}
-
-.language-menu a{
-
-    display:block;
-
-    padding:12px 18px;
-
-    color:var(--ink);
-
-}
-
-.language-menu a:hover{
-
-    background:#F6FAF9;
-
-}
-
-/* ===================================
-   Hero
-=================================== */
 
 #hero{
 
-    background:#fff;
+    background:white;
 
-    border-bottom:1px solid var(--line);
-
-    min-height:260px;
+    min-height:420px;
 
     display:flex;
 
     align-items:center;
 
-    justify-content:center;
-
     text-align:center;
 
+    border-bottom:1px solid var(--line);
+
 }
+
+
 
 .hero-title{
 
@@ -440,20 +317,26 @@ nav a.active{
 
 }
 
+
+
 .hero-subtitle{
 
     max-width:700px;
 
-    margin:30px auto 0;
+    margin:30px auto;
 
-    color:var(--muted);
-
-    font-size:1.15rem;
+    font-size:1.2rem;
 
 }
-/* ===================================
-   Sections
-=================================== */
+
+
+
+
+
+/* ===============================
+   GENERAL SECTION
+=============================== */
+
 
 section{
 
@@ -461,9 +344,14 @@ section{
 
 }
 
-/* ===================================
-   System Flow
-=================================== */
+
+
+
+
+/* ===============================
+   3. AI PROCESS FLOW
+=============================== */
+
 
 #system-flow{
 
@@ -471,11 +359,11 @@ section{
 
 }
 
+
+
 .flow-card{
 
-    background:#fff;
-
-    border:1px solid var(--line);
+    background:white;
 
     border-radius:24px;
 
@@ -485,25 +373,27 @@ section{
 
 }
 
+
+
 .flow-card h3{
 
     text-align:center;
 
-    margin-bottom:45px;
+    margin-bottom:40px;
 
     font-size:1.6rem;
 
-    color:var(--navy);
-
 }
+
+
 
 .flow-diagram{
 
     display:flex;
 
-    align-items:center;
-
     justify-content:center;
+
+    align-items:center;
 
     gap:30px;
 
@@ -511,7 +401,7 @@ section{
 
 }
 
-/* Left monitoring */
+
 
 .flow-stack{
 
@@ -523,7 +413,7 @@ section{
 
     gap:15px;
 
-    padding:18px;
+    padding:20px;
 
     border:2px dashed #5B8EF9;
 
@@ -531,43 +421,33 @@ section{
 
 }
 
+
+
 .flow-stack span{
 
-    display:flex;
+    padding:15px;
 
-    align-items:center;
-
-    justify-content:center;
-
-    min-height:56px;
+    text-align:center;
 
     border:1px solid #6C98FF;
 
     border-radius:12px;
 
-    background:#fff;
-
-    font-size:.95rem;
-
     font-weight:600;
-
-    color:#2A4568;
 
 }
 
-/* Arrow */
+
 
 .flow-arrow{
 
-    font-size:34px;
+    font-size:35px;
 
     color:#6A97FF;
 
-    font-weight:300;
-
 }
 
-/* Middle */
+
 
 .flow-column{
 
@@ -575,89 +455,73 @@ section{
 
     flex-direction:column;
 
-    gap:18px;
-
-    width:180px;
+    gap:15px;
 
 }
 
+
+
 .flow-pill{
 
-    display:flex;
+    width:180px;
 
-    justify-content:center;
+    padding:18px;
 
-    align-items:center;
-
-    min-height:58px;
+    text-align:center;
 
     border-radius:12px;
 
     border:1px solid #88AFFF;
 
-    background:#F9FBFF;
-
-    color:#28456B;
-
     font-weight:700;
 
 }
+
+
 
 .flow-primary{
 
     background:var(--brand);
 
-    color:#fff;
-
-    border:none;
-
-    box-shadow:0 12px 24px rgba(16,163,134,.28);
+    color:white;
 
 }
 
-/* Guidance */
+
 
 .flow-panel{
 
     width:260px;
 
-    background:#fff;
+    background:white;
 
-    border:1px solid #DCE4EC;
+    padding:25px;
 
     border-radius:18px;
 
-    padding:28px;
+    border:1px solid var(--line);
 
 }
 
-.flow-panel strong{
 
-    display:block;
-
-    margin-bottom:18px;
-
-    font-size:1.35rem;
-
-    color:var(--navy);
-
-}
 
 .flow-panel ul{
 
     list-style:none;
 
-    margin:0;
-
 }
+
+
 
 .flow-panel li{
 
-    margin-bottom:14px;
+    margin:12px 0;
 
     color:var(--muted);
 
 }
+
+
 
 .flow-panel li::before{
 
@@ -665,21 +529,21 @@ section{
 
     color:var(--brand);
 
-    font-weight:bold;
-
     margin-right:10px;
 
 }
 
-/* Cloud */
+
 
 .cloud-card{
 
-    width:135px;
+    width:130px;
 
-    height:210px;
+    height:200px;
 
     background:var(--navy);
+
+    color:white;
 
     border-radius:20px;
 
@@ -691,13 +555,9 @@ section{
 
     align-items:center;
 
-    color:#fff;
-
-    gap:16px;
-
-    box-shadow:0 15px 30px rgba(25,57,99,.25);
-
 }
+
+
 
 .cloud-icon{
 
@@ -705,31 +565,40 @@ section{
 
 }
 
-/* ===================================
-   Journey
-=================================== */
+
+
+
+
+/* ===============================
+   4. PERSONALIZED HEALTH REPORT
+=============================== */
+
 
 #journey{
 
-    background:#fff;
+    background:white;
 
 }
+
+
 
 .section-heading{
 
     text-align:center;
 
-    margin-bottom:55px;
+    margin-bottom:50px;
 
 }
+
+
 
 .section-heading p{
 
-    font-size:1.1rem;
-
-    margin-top:10px;
+    margin-top:15px;
 
 }
+
+
 
 .journey-grid{
 
@@ -737,31 +606,37 @@ section{
 
     grid-template-columns:repeat(3,1fr);
 
-    gap:28px;
+    gap:30px;
 
 }
+
+
 
 .journey-card{
 
-    background:#fff;
+    background:white;
 
-    border:1px solid var(--line);
+    padding:35px;
 
     border-radius:22px;
 
-    padding:32px;
+    border:1px solid var(--line);
 
     box-shadow:var(--shadow);
 
-    transition:.3s;
-
 }
+
+
 
 .journey-card:hover{
 
     transform:translateY(-8px);
 
+    transition:.3s;
+
 }
+
+
 
 .featured-card{
 
@@ -769,55 +644,27 @@ section{
 
 }
 
-.badge{
 
-    display:inline-block;
-
-    margin-bottom:18px;
-
-    padding:7px 16px;
-
-    border-radius:999px;
-
-    background:#EAF8F4;
-
-    color:var(--brand);
-
-    font-weight:700;
-
-    font-size:.8rem;
-
-}
-
-.vip{
-
-    background:var(--brand);
-
-    color:#fff;
-
-}
-
-.journey-card h3{
-
-    margin-bottom:16px;
-
-}
 
 .journey-card ul{
 
     list-style:none;
 
-    margin:25px 0;
+    margin-top:20px;
 
 }
 
+
+
 .journey-card li{
 
-    margin-bottom:14px;
+    margin:12px 0;
 
     color:var(--muted);
 
 }
+
+
 
 .journey-card li::before{
 
@@ -831,88 +678,127 @@ section{
 
 }
 
-/* ===================================
-   Buttons
-=================================== */
 
-.button{
 
-    display:inline-flex;
+.badge{
 
-    justify-content:center;
+    display:inline-block;
 
-    align-items:center;
-
-    width:100%;
-
-    height:52px;
+    padding:7px 15px;
 
     border-radius:999px;
 
-    background:var(--brand);
-
-    color:#fff;
-
-    font-weight:700;
-
-    transition:.25s;
-
-}
-
-.button:hover{
-
-    background:var(--brand-dark);
-
-}
-
-.button-outline{
-
-    background:#fff;
+    background:#EAF8F4;
 
     color:var(--brand);
 
-    border:2px solid var(--brand);
+    font-weight:bold;
 
 }
 
-.button-outline:hover{
 
-    color:#fff;
 
-    background:var(--brand);
 
-}
 
-/* ===================================
-   Footer
-=================================== */
+/* ===============================
+   5. FOOTER
+=============================== */
+
 
 footer{
 
-    background:#fff;
+    background:var(--navy);
 
-    border-top:1px solid var(--line);
-
-    padding:45px 0;
+    color:white;
 
     text-align:center;
 
+    padding:45px 0;
+
 }
+
+
 
 footer p{
 
-    margin-bottom:10px;
+    color:white;
 
 }
+
 
 footer a{
 
-    color:var(--muted);
+    color:white;
 
 }
 
-footer a:hover{
 
-    color:var(--brand);
+
+
+/* ===============================
+   RESPONSIVE
+=============================== */
+
+
+@media(max-width:1000px){
+
+
+.nav-right{
+
+    gap:15px;
+
+}
+
+
+nav{
+
+    display:none;
+
+}
+
+
+.journey-grid{
+
+    grid-template-columns:1fr;
+
+}
+
+
+
+.flow-diagram{
+
+    flex-direction:column;
+
+}
+
+
+}
+
+
+
+@media(max-width:600px){
+
+
+h1{
+
+    font-size:2.5rem;
+
+}
+
+
+.flow-card{
+
+    padding:25px;
+
+}
+
+
+.btn-login,
+.btn-language{
+
+    padding:10px 14px;
+
+}
+
 
 }
