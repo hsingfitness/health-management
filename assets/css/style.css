@@ -63,11 +63,15 @@ body{
 }
 
 
-.container{
+.container {
 
-    width:min(92%,1180px);
+    width:100%;
 
-    margin:auto;
+    max-width:1200px;
+
+    margin:0 auto;
+
+    padding:0 20px;
 
 }
 
@@ -133,6 +137,7 @@ p{
 header{
 
     position:sticky;
+    width:100%;
     top:0;
     z-index:999;
 
@@ -524,13 +529,19 @@ section{
 
 .flow-diagram {
 
+    width:100%;
+
+    max-width:1200px;
+
+    margin:0 auto;
+
     display:flex;
 
     justify-content:center;
 
     align-items:center;
 
-    gap:25px;
+    gap:30px;
 
     flex-wrap:wrap;
 
