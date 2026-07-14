@@ -706,130 +706,129 @@ section{
    4. PERSONALIZED HEALTH REPORT
 =============================== */
 
+#journey {
+    background: white;
+}
 
-#journey{
 
-    background:white;
+/* Section title */
+.section-heading {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.section-heading p {
+    margin-top: 15px;
+}
+
+
+/* Three cards layout */
+.journey-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    align-items: stretch;
+}
+
+
+/* Card */
+.journey-card {
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 40px;
+
+    border-radius: 25px;
+
+    border: 1px solid #dce5ef;
+
+    min-height: 480px;
+
+    box-sizing: border-box;
+}
+
+
+/* Hover effect */
+.journey-card:hover {
+
+    transform: translateY(-8px);
+
+    transition: .3s;
 
 }
 
 
+/* Highlight middle card */
+.featured-card {
 
-.section-heading{
-
-    text-align:center;
-
-    margin-bottom:50px;
+    border: 2px solid var(--brand);
 
 }
 
 
+/* Feature list */
+.journey-card ul {
 
-.section-heading p{
+    list-style: none;
 
-    margin-top:15px;
+    margin-top: 20px;
 
-}
+    padding: 0;
 
-
-
-.journey-grid{
-
-    display:grid;
-
-    grid-template-columns:repeat(3,1fr);
-
-    gap:30px;
+    flex-grow: 1;   /* ⭐ pushes button down */
 
 }
 
 
+.journey-card li {
 
-.journey-card{
+    margin: 12px 0;
 
-    background:white;
-
-    padding:35px;
-
-    border-radius:22px;
-
-    border:1px solid var(--line);
-
-    box-shadow:var(--shadow);
+    color: var(--muted);
 
 }
 
 
+.journey-card li::before {
 
-.journey-card:hover{
+    content: "✓";
 
-    transform:translateY(-8px);
+    color: var(--brand);
 
-    transition:.3s;
+    font-weight: bold;
 
-}
-
-
-
-.featured-card{
-
-    border:2px solid var(--brand);
+    margin-right: 10px;
 
 }
 
 
+/* Button alignment */
+.journey-card .button {
 
-.journey-card ul{
+    margin-top: auto;   /* ⭐ all buttons same level */
 
-    list-style:none;
-
-    margin-top:20px;
-
-}
-
-
-
-.journey-card li{
-
-    margin:12px 0;
-
-    color:var(--muted);
+    align-self: flex-start;
 
 }
 
 
+/* Badge */
+.badge {
 
-.journey-card li::before{
+    display: inline-block;
 
-    content:"✓";
+    padding: 7px 15px;
 
-    color:var(--brand);
+    border-radius: 999px;
 
-    font-weight:bold;
+    background: #EAF8F4;
 
-    margin-right:10px;
+    color: var(--brand);
 
-}
-
-
-
-.badge{
-
-    display:inline-block;
-
-    padding:7px 15px;
-
-    border-radius:999px;
-
-    background:#EAF8F4;
-
-    color:var(--brand);
-
-    font-weight:bold;
+    font-weight: bold;
 
 }
-
-
 
 
 
