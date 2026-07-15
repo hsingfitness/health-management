@@ -254,7 +254,7 @@ nav a.active{
 
     position:absolute;
 
-    top:35px;
+    top:100%;
 
     left:0;
 
@@ -270,10 +270,14 @@ nav a.active{
 
     display:none;
 
+    z-index:1000;
+
 }
 
 
-.dropdown:hover .dropdown-menu{
+.dropdown:hover .dropdown-menu,
+.dropdown:focus-within .dropdown-menu,
+.dropdown.is-open .dropdown-menu{
 
     display:block;
 
