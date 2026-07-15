@@ -2028,6 +2028,7 @@ h1{
 .google-form-grid {
 
     display: grid;
+    background:red;
 
     grid-template-columns: 1fr 1fr;
 
