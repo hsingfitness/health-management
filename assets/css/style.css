@@ -2066,6 +2066,41 @@ h1{
    GOOGLE FORM TWO COLUMNS
 ========================== */
 
+/*
+   Keep the two embedded Google forms side by side on tablet and
+   desktop screens. This rule lives at the end of the stylesheet so it
+   wins over earlier contact form rules and avoids the layout falling
+   back to a single column unless the small-screen media query applies.
+*/
+.google-form-grid{
+
+    display:flex;
+
+    flex-wrap:nowrap;
+
+    align-items:stretch;
+
+    gap:32px;
+
+}
+
+.google-form-grid .form-column{
+
+    flex:1 1 0;
+
+    min-width:0;
+
+}
+
+@media(max-width:768px){
+
+    .google-form-grid{
+
+        flex-direction:column;
+
+    }
+
+}
 
 .contact-container{
 
