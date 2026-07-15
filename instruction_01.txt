@@ -1,0 +1,19 @@
+推荐开发顺序：
+
+1. 前端页面
+       ↓
+2. GitHub保存
+       ↓
+3. 后端API (Render)
+       ↓
+4. Database (Supabase)
+       ↓
+5. 用户登录系统
+       ↓
+6. Stripe付款
+       ↓
+7. AI生成健康报告
+       ↓
+8. 正式部署
+
+你不需要一开始买服务器。用 GitHub + Render + Supabase + ChatGPT 就可以做出一个完整 SaaS 网站
