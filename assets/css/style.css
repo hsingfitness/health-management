@@ -987,7 +987,11 @@ h1{
 /* =========================
    CONTACT PAGE
 ========================= */
-
+.contact-subtitle {
+    font-size: 20px;
+    color: #666;
+    margin-bottom: 50px;
+}
 
 .contact-grid{
     display:grid;
