@@ -1415,8 +1415,12 @@ h1{
     .social-login {
         grid-template-columns: 1fr;
         flex-direction: column;
+    }
+}
+
 /* =========================
    LOGIN PAGE
+========================= */
 
 .login-hero{
     min-height:calc(100vh - 80px);
