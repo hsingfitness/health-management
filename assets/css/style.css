@@ -987,6 +987,11 @@ h1{
 /* =========================
    CONTACT PAGE
 ========================= */
+
+.ontact-section {
+    padding-bottom: 80px; /* space before footer */
+}
+
 .contact-subtitle {
     font-size: 20px;
     color: #666;
