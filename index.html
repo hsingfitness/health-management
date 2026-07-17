@@ -414,84 +414,69 @@ PROCESS / FLOWCHART
 
         </div>
 
-        <div class="process-diagram">
+        <div class="process-grid">
 
-            <div class="process-col">
+            <div class="pg-bio process-group">
 
-                <div class="process-group">
+                <span class="process-group__label">Biometric Monitoring</span>
 
-                    <span class="process-group__label">Biometric Monitoring</span>
-
-                    <div class="process-node">
-                        <span class="process-node__icon" aria-hidden="true">⌚</span>
-                        Wearable Monitoring
-                    </div>
-
-                    <div class="process-node">
-                        <span class="process-node__icon" aria-hidden="true">📷</span>
-                        Image Recognition
-                    </div>
-
-                    <div class="process-node" id="medical-testing-node">
-                        <span class="process-node__icon" aria-hidden="true">🧪</span>
-                        Medical Testing
-                    </div>
-
+                <div class="process-node">
+                    <span class="process-node__icon" aria-hidden="true">⌚</span>
+                    Wearable Monitoring
                 </div>
 
-                <div class="process-node process-node--standalone">
-                    <span class="process-node__icon" aria-hidden="true">📝</span>
-                    Symptom Reporting
+                <div class="process-node">
+                    <span class="process-node__icon" aria-hidden="true">📷</span>
+                    Image Recognition
                 </div>
 
             </div>
 
-            <div class="process-arrow" aria-hidden="true">&rarr;</div>
+            <div class="pg-arrow pg-arrow--down pg-arrow-bio-medtest" aria-hidden="true">&darr;</div>
 
-            <div class="process-col process-col--center">
-
-                <div class="process-node process-node--analysis">
-                    <span class="process-node__icon" aria-hidden="true">🔎📈</span>
-                    Health Analysis
-                </div>
-
+            <div class="pg-medtest process-node">
+                <span class="process-node__icon" aria-hidden="true">🧪</span>
+                Medical Testing
             </div>
 
-            <div class="process-arrow" aria-hidden="true">&rarr;</div>
+            <div class="pg-arrow pg-arrow--right pg-arrow-bio-health" aria-hidden="true">&rarr;</div>
+            <div class="pg-arrow pg-arrow--right pg-arrow-medtest-clinic" aria-hidden="true">&rarr;</div>
 
-            <div class="process-col process-col--center">
-
-                <div class="process-node process-node--guidance">
-                    <strong>Personalized Guidance</strong>
-                    <ul>
-                        <li>Nutrition Plans</li>
-                        <li>Exercise Recommendations</li>
-                        <li>Medical Advice</li>
-                    </ul>
-                </div>
-
+            <div class="pg-symptom process-node process-node--standalone">
+                <span class="process-node__icon" aria-hidden="true">📝</span>
+                Symptom Reporting
             </div>
 
-            <div class="process-arrow" aria-hidden="true">&rarr;</div>
+            <div class="pg-arrow pg-arrow--down pg-arrow-symptom-health" aria-hidden="true">&darr;</div>
 
-            <div class="process-col process-col--center">
-
-                <div class="process-node process-node--cloud">
-                    <span class="process-node__icon" aria-hidden="true">📲☁️</span>
-                    Cloud Delivery
-                </div>
-
+            <div class="pg-health process-node process-node--analysis">
+                <span class="process-node__icon" aria-hidden="true">🔎📈</span>
+                Health Analysis
             </div>
 
-        </div>
+            <div class="pg-arrow pg-arrow--updown pg-arrow-health-clinic" aria-hidden="true">&updownarrow;</div>
 
-        <div class="process-branch">
-
-            <div class="process-branch__arrow" aria-hidden="true">&uarr;</div>
-
-            <div class="process-node process-node--clinic">
+            <div class="pg-clinic process-node process-node--clinic">
                 <span class="process-node__icon" aria-hidden="true">🏥</span>
                 Medical Clinic
+            </div>
+
+            <div class="pg-arrow pg-arrow--right pg-arrow-health-guidance" aria-hidden="true">&rarr;</div>
+
+            <div class="pg-guidance process-node process-node--guidance">
+                <strong>Personalized Guidance</strong>
+                <ul>
+                    <li>Nutrition Plans</li>
+                    <li>Exercise Recommendations</li>
+                    <li>Medical Advice</li>
+                </ul>
+            </div>
+
+            <div class="pg-arrow pg-arrow--right pg-arrow-guidance-cloud" aria-hidden="true">&rarr;</div>
+
+            <div class="pg-cloud process-node process-node--cloud">
+                <span class="process-node__icon" aria-hidden="true">📲☁️</span>
+                Cloud Delivery
             </div>
 
         </div>

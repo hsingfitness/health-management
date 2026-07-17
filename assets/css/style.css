@@ -2710,33 +2710,86 @@ border:none;
     color: var(--navy);
 }
 
-.process-diagram {
+.process-grid {
+    display: grid;
+    grid-template-columns: 230px 40px 200px 40px 210px 40px 180px;
+    grid-template-rows: auto 40px auto 40px auto;
+    align-items: center;
+    justify-items: stretch;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.pg-bio {
+    grid-column: 1 / 2;
+    grid-row: 1 / 4;
+    align-self: stretch;
+}
+
+.pg-medtest {
+    grid-column: 1 / 2;
+    grid-row: 5 / 6;
+}
+
+.pg-symptom {
+    grid-column: 3 / 4;
+    grid-row: 1 / 2;
+}
+
+.pg-health {
+    grid-column: 3 / 4;
+    grid-row: 3 / 4;
+}
+
+.pg-clinic {
+    grid-column: 3 / 4;
+    grid-row: 5 / 6;
+}
+
+.pg-guidance {
+    grid-column: 5 / 6;
+    grid-row: 3 / 4;
+    align-self: center;
+}
+
+.pg-cloud {
+    grid-column: 7 / 8;
+    grid-row: 3 / 4;
+    align-self: center;
+}
+
+.pg-arrow {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 14px;
-    flex-wrap: wrap;
+    color: #94A3B8;
+    font-size: 1.5rem;
+    line-height: 1;
 }
 
-.process-col {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
+.pg-arrow--right { font-size: 1.6rem; }
+.pg-arrow--down,
+.pg-arrow--updown { font-size: 1.3rem; }
 
-.process-col--center {
-    justify-content: center;
-}
+.pg-arrow-bio-medtest { grid-column: 1 / 2; grid-row: 4 / 5; }
+.pg-arrow-bio-health { grid-column: 2 / 3; grid-row: 3 / 4; }
+.pg-arrow-medtest-clinic { grid-column: 2 / 3; grid-row: 5 / 6; }
+.pg-arrow-symptom-health { grid-column: 3 / 4; grid-row: 2 / 3; }
+.pg-arrow-health-clinic { grid-column: 3 / 4; grid-row: 4 / 5; }
+.pg-arrow-health-guidance { grid-column: 4 / 5; grid-row: 3 / 4; }
+.pg-arrow-guidance-cloud { grid-column: 6 / 7; grid-row: 3 / 4; }
 
 .process-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
+    height: 100%;
     padding: 30px 16px 16px;
     position: relative;
     border: 1.5px solid var(--navy);
     border-radius: 14px;
-    background: white;
+    background: #EEF3FA;
+    justify-content: space-evenly;
 }
 
 .process-group__label {
@@ -2750,21 +2803,24 @@ border:none;
     font-size: .72rem;
     font-weight: 800;
     letter-spacing: .02em;
+    white-space: nowrap;
 }
 
 .process-node {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    min-width: 190px;
-    padding: 12px 16px;
+    width: 100%;
+    padding: 12px 14px;
     border: 1px solid var(--line);
     border-radius: 10px;
     background: white;
     color: var(--ink);
-    font-size: .85rem;
+    font-size: .82rem;
     font-weight: 700;
     box-shadow: 0 2px 6px rgba(17,24,39,.04);
+    text-align: center;
 }
 
 .process-node__icon {
@@ -2777,17 +2833,18 @@ border:none;
 }
 
 .process-node--analysis {
-    justify-content: center;
-    text-align: center;
+    flex-direction: column;
+    gap: 4px;
     border: 1.5px solid var(--brand);
     background: #ECFDF7;
     color: var(--brand-dark);
-    font-size: .95rem;
+    font-size: .92rem;
 }
 
 .process-node--guidance {
     flex-direction: column;
     align-items: flex-start;
+    text-align: left;
     background: #F3F0FF;
     border-color: #D9CFFB;
 }
@@ -2804,43 +2861,32 @@ border:none;
 }
 
 .process-node--cloud {
-    justify-content: center;
     background: var(--navy);
     border-color: var(--navy);
     color: white;
-    font-size: .95rem;
+    font-size: .92rem;
 }
 
 .process-node--clinic {
     background: white;
 }
 
-.process-arrow {
-    color: #94A3B8;
-    font-size: 1.6rem;
-    line-height: 1;
-}
-
-.process-branch {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    margin-top: 26px;
-}
-
-.process-branch__arrow {
-    color: #94A3B8;
-    font-size: 1.4rem;
-    line-height: 1;
-}
-
-@media(max-width:1100px){
-    .process-diagram {
-        flex-direction: column;
+@media(max-width:1050px){
+    .process-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: none;
+        gap: 14px;
+        max-width: 380px;
     }
 
-    .process-arrow {
+    .pg-bio, .pg-medtest, .pg-symptom, .pg-health, .pg-clinic, .pg-guidance, .pg-cloud {
+        grid-column: 1 / 2;
+        grid-row: auto;
+    }
+
+    .pg-arrow {
+        grid-column: 1 / 2;
+        grid-row: auto;
         transform: rotate(90deg);
     }
 }
