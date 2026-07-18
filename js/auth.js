@@ -192,12 +192,16 @@ function initSignupForm() {
 
 /* ---------- nav swap (Log In button <-> account menu) ---------- */
 
+function rootPath(path) {
+    return /\/(fitness|legal)\//.test(window.location.pathname) ? "../" + path : path;
+}
+
 function renderNavAuth() {
     const slot = document.getElementById("nav-auth-slot");
     if (!slot) return;
 
     if (!isLoggedIn()) {
-        slot.innerHTML = `<a href="login.html" class="btn-login">Log In</a>`;
+        slot.innerHTML = `<a href="${rootPath("login.html")}" class="btn-login">Log In</a>`;
         return;
     }
 
@@ -211,8 +215,8 @@ function renderNavAuth() {
                 ${user.name || "Account"}
             </button>
             <div class="account-menu__dropdown">
-                <a href="assessment.html">My Assessments</a>
-                <a href="marketplace.html">My Orders</a>
+                <a href="${rootPath("assessment.html")}">My Assessments</a>
+                <a href="${rootPath("marketplace.html")}">My Orders</a>
                 <button type="button" id="logout-btn">Log Out</button>
             </div>
         </div>
