@@ -37,6 +37,20 @@ function isLoggedIn() {
     return Boolean(getToken());
 }
 
+/* ---------- page protection (gate fitness pages behind login) ---------- */
+
+function requireAuth() {
+    if (isLoggedIn()) return;
+
+    const path = window.location.pathname;
+    const inSubfolder = path.includes("/fitness/");
+    const currentFile = path.substring(path.lastIndexOf("/") + 1);
+    const redirectValue = inSubfolder ? `fitness/${currentFile}` : currentFile;
+    const loginUrl = inSubfolder ? "../login.html" : "login.html";
+
+    window.location.href = `${loginUrl}?redirect=${encodeURIComponent(redirectValue)}`;
+}
+
 /* ---------- API calls ---------- */
 
 async function apiRequest(path, options = {}) {
@@ -130,7 +144,8 @@ function initLoginForm() {
 
         try {
             await login({ email, password });
-            window.location.href = "index.html";
+            const params = new URLSearchParams(window.location.search);
+            window.location.href = params.get("redirect") || "index.html";
         } catch (err) {
             showFormError(form, err.message);
         } finally {
