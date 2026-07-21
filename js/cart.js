@@ -452,6 +452,7 @@
         getCount: function () { return getCount(); },
         getSubtotal: function () { return getSubtotal(); },
         open: openDrawer,
-        close: closeDrawer
+        close: closeDrawer,
+        rebind: bindAddToCartButtons
     };
 })();
