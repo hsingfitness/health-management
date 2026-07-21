@@ -4,7 +4,7 @@
    Update API_BASE once the backend is live.
 ========================================================= */
 
-const API_BASE = "https://YOUR-BACKEND.onrender.com/api";
+const API_BASE = "https://health-management-llck.onrender.com/api";
 
 const AUTH_TOKEN_KEY = "hm_token";
 const AUTH_USER_KEY = "hm_user";
