@@ -85,6 +85,30 @@ DEFAULT_PRODUCTS = [
         price=44.99, category="devices", icon="〽",
         badges=["Optional"], sort_order=13,
     ),
+    dict(
+        id="high-protein-chicken-bowl", name="High-Protein Chicken Bowl",
+        description="Lean protein with quinoa and roasted vegetables.",
+        price=14.99, category="meals", icon="🍽",
+        badges=["Chef's Pick", "Optional"], sort_order=14,
+    ),
+    dict(
+        id="keto-meal-plan-weekly", name="Keto Meal Plan (Weekly)",
+        description="7-day ketogenic meal plan for metabolic health.",
+        price=79.99, category="meals", icon="🍽",
+        badges=["Optional"], sort_order=15,
+    ),
+    dict(
+        id="organic-vegetable-box", name="Organic Vegetable Box",
+        description="Fresh seasonal organic vegetables delivered weekly.",
+        price=34.99, category="meals", icon="🍽",
+        badges=["Optional"], sort_order=16,
+    ),
+    dict(
+        id="low-sugar-dessert-pack", name="Low-Sugar Dessert Pack",
+        description="Healthy treats sweetened with natural alternatives.",
+        price=18.99, category="meals", icon="🍽",
+        badges=["Optional"], sort_order=17,
+    ),
 ]
 
 

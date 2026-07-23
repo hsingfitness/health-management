@@ -13,7 +13,8 @@
         "Best Seller": "badge--gold",
         "Popular": "badge--purple",
         "New": "badge--blue",
-        "Top Rated": "badge--green"
+        "Top Rated": "badge--green",
+        "Chef's Pick": "badge--green"
     };
 
     function badgeClass(text) {
