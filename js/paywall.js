@@ -36,6 +36,26 @@
         el("assessment-gate-home-link").hidden = !showHomeLink;
         document.querySelector(".assessment-intro").hidden = true;
         el("assessment-form").hidden = true;
+
+        // Safety net: whatever happens, never leave someone stuck on a
+        // spinner with no way out. If this gate is still showing after a
+        // few seconds, reveal the home link regardless.
+        window.clearTimeout(showGate._timer);
+        showGate._timer = window.setTimeout(function () {
+            const homeLink = el("assessment-gate-home-link");
+            if (homeLink && !el("assessment-gate").hidden) {
+                homeLink.hidden = false;
+            }
+        }, 6000);
+    }
+
+    function withTimeout(promise, ms) {
+        return Promise.race([
+            promise,
+            new Promise(function (_, reject) {
+                window.setTimeout(function () { reject(new Error("timeout")); }, ms);
+            })
+        ]);
     }
 
     function planLabel(plan) {
