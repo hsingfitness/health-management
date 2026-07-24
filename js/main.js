@@ -116,6 +116,33 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     /* --------------------------------
+       Mobile Nav Toggle
+    -------------------------------- */
+    const navToggle = document.querySelector(".nav-toggle");
+    const mainNav = document.querySelector("header nav");
+
+    if (navToggle && mainNav) {
+        navToggle.addEventListener("click", function () {
+            const isOpen = mainNav.classList.toggle("nav-open");
+            navToggle.setAttribute("aria-expanded", String(isOpen));
+        });
+
+        mainNav.querySelectorAll("a").forEach(function (link) {
+            link.addEventListener("click", function () {
+                mainNav.classList.remove("nav-open");
+                navToggle.setAttribute("aria-expanded", "false");
+            });
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!mainNav.classList.contains("nav-open")) return;
+            if (mainNav.contains(event.target) || navToggle.contains(event.target)) return;
+            mainNav.classList.remove("nav-open");
+            navToggle.setAttribute("aria-expanded", "false");
+        });
+    }
+
+    /* --------------------------------
        Contact Form Validation
     -------------------------------- */
     const form = document.querySelector("form");
