@@ -3446,3 +3446,31 @@ body.cart-open {
     color: var(--ink);
     font-weight: 600;
 }
+
+/* ===============================
+   CONTACT FORM MESSAGE
+=============================== */
+
+.form-message {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: .88rem;
+    font-weight: 700;
+}
+
+.form-message.pending {
+    background: #F0F2F5;
+    color: #6B7280;
+}
+
+.form-message.success {
+    background: #DCFCE7;
+    color: #15803D;
+}
+
+.form-message.error {
+    background: #FDECEC;
+    border: 1px solid #F5C2C2;
+    color: #B42318;
+}

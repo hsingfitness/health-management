@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
 from .database import Base, SessionLocal, engine, run_column_migrations
-from .routers import admin, auth, payments, products, reports
+from .routers import admin, auth, contact, payments, products, reports
 from .seed import seed_products
 
 # Creates tables if they don't exist yet. Fine for this project's current size;
@@ -39,6 +39,7 @@ app.include_router(payments.router, prefix="/api")
 app.include_router(reports.router, prefix="/api")
 app.include_router(products.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
+app.include_router(contact.router, prefix="/api")
 
 
 @app.get("/")
