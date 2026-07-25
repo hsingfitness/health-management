@@ -32,6 +32,9 @@ COLUMN_MIGRATIONS = {
         ("plan", "VARCHAR(20) NOT NULL DEFAULT 'free'"),
         ("permissions", "JSON NOT NULL DEFAULT '{}'"),
     ],
+    "orders": [
+        ("delivery_status", "VARCHAR(20) NOT NULL DEFAULT 'pending'"),
+    ],
 }
 
 

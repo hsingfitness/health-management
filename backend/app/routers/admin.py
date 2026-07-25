@@ -2,9 +2,17 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..deps import get_current_user, require_role
-from ..models import User
-from ..schemas import ALLOWED_PERMISSIONS, OperatorCreate, OperatorOut, OperatorPermissionsUpdate
+from ..deps import get_current_user, require_permission, require_role
+from ..models import Order, Report, User
+from ..schemas import (
+    ALLOWED_PERMISSIONS,
+    AdminOrderOut,
+    AdminReportOut,
+    DeliveryStatusUpdate,
+    OperatorCreate,
+    OperatorOut,
+    OperatorPermissionsUpdate,
+)
 from ..security import hash_password
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -90,3 +98,89 @@ def remove_operator(
     operator.role = "user"
     operator.permissions = {}
     db.commit()
+
+
+# ---------- Order fulfillment (manage_orders permission) ----------
+
+@router.get("/orders", response_model=list[AdminOrderOut])
+def list_all_orders(
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(require_permission("manage_orders")),
+):
+    orders = db.query(Order).order_by(Order.created_at.desc()).all()
+    customers = {
+        u.id: u for u in db.query(User).filter(User.id.in_([o.user_id for o in orders if o.user_id])).all()
+    }
+
+    return [
+        AdminOrderOut(
+            id=str(o.id),
+            customer_name=customers[o.user_id].name if o.user_id in customers else None,
+            customer_email=customers[o.user_id].email if o.user_id in customers else None,
+            items=o.items,
+            amount_total=float(o.amount_total),
+            currency=o.currency,
+            status=o.status,
+            delivery_status=o.delivery_status,
+            created_at=o.created_at,
+        )
+        for o in orders
+    ]
+
+
+@router.patch("/orders/{order_id}/delivery", response_model=AdminOrderOut)
+def update_delivery_status(
+    order_id: str,
+    payload: DeliveryStatusUpdate,
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(require_permission("manage_orders")),
+):
+    order = db.query(Order).filter(Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found.")
+
+    order.delivery_status = payload.delivery_status
+    db.commit()
+    db.refresh(order)
+
+    customer = db.query(User).filter(User.id == order.user_id).first() if order.user_id else None
+
+    return AdminOrderOut(
+        id=str(order.id),
+        customer_name=customer.name if customer else None,
+        customer_email=customer.email if customer else None,
+        items=order.items,
+        amount_total=float(order.amount_total),
+        currency=order.currency,
+        status=order.status,
+        delivery_status=order.delivery_status,
+        created_at=order.created_at,
+    )
+
+
+# ---------- Assessment report review (view_reports permission) ----------
+
+@router.get("/reports", response_model=list[AdminReportOut])
+def list_all_reports(
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(require_permission("view_reports")),
+):
+    reports = db.query(Report).order_by(Report.created_at.desc()).all()
+    customers = {
+        u.id: u for u in db.query(User).filter(User.id.in_([r.user_id for r in reports if r.user_id])).all()
+    }
+
+    return [
+        AdminReportOut(
+            id=str(r.id),
+            customer_name=customers[r.user_id].name if r.user_id in customers else None,
+            customer_email=customers[r.user_id].email if r.user_id in customers else None,
+            input=r.input,
+            summary=r.output.get("summary", ""),
+            risk_level=r.output.get("risk_level", ""),
+            recommendations=r.output.get("recommendations", []),
+            tier=r.output.get("tier", "free"),
+            created_at=r.created_at,
+        )
+        for r in reports
+    ]

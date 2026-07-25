@@ -56,6 +56,7 @@ class OrderOut(BaseModel):
     amount_total: float
     currency: str
     status: str
+    delivery_status: str = "pending"
     created_at: datetime
 
     class Config:
@@ -125,7 +126,7 @@ class ProductUpdate(BaseModel):
 
 # ---------- Admin: operator management ----------
 
-ALLOWED_PERMISSIONS = ["manage_products"]
+ALLOWED_PERMISSIONS = ["manage_products", "view_reports", "manage_orders"]
 
 
 class OperatorOut(BaseModel):
@@ -149,3 +150,38 @@ class OperatorCreate(BaseModel):
 
 class OperatorPermissionsUpdate(BaseModel):
     permissions: dict[str, bool]
+
+
+# ---------- Admin: order fulfillment ----------
+
+class AdminOrderOut(BaseModel):
+    id: str
+    customer_name: str | None = None
+    customer_email: str | None = None
+    items: list[dict]
+    amount_total: float
+    currency: str
+    status: str
+    delivery_status: str
+    created_at: datetime
+
+
+ALLOWED_DELIVERY_STATUSES = ["pending", "shipped", "delivered", "canceled"]
+
+
+class DeliveryStatusUpdate(BaseModel):
+    delivery_status: str = Field(pattern="^(pending|shipped|delivered|canceled)$")
+
+
+# ---------- Admin: report review ----------
+
+class AdminReportOut(BaseModel):
+    id: str
+    customer_name: str | None = None
+    customer_email: str | None = None
+    input: dict
+    summary: str
+    risk_level: str
+    recommendations: list[str]
+    tier: str
+    created_at: datetime

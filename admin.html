@@ -70,6 +70,8 @@
 
             <div class="admin-tabs" role="tablist">
                 <button type="button" class="admin-tab is-active" data-tab="products" role="tab">Products</button>
+                <button type="button" class="admin-tab" data-tab="orders" role="tab" id="orders-tab-btn" hidden>Orders</button>
+                <button type="button" class="admin-tab" data-tab="reports" role="tab" id="reports-tab-btn" hidden>Reports</button>
                 <button type="button" class="admin-tab" data-tab="operators" role="tab" id="operators-tab-btn" hidden>Operators</button>
             </div>
 
@@ -162,6 +164,48 @@
                 </div>
             </section>
 
+            <!-- ============ ORDERS TAB (manage_orders permission) ============ -->
+            <section id="tab-orders" class="admin-panel" hidden>
+                <div class="admin-table-wrap">
+                    <table class="admin-table" id="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Customer</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Payment</th>
+                                <th>Delivery</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-tbody">
+                            <tr><td colspan="6" class="admin-table__loading">Loading orders…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ============ REPORTS TAB (view_reports permission) ============ -->
+            <section id="tab-reports" class="admin-panel" hidden>
+                <div class="admin-table-wrap">
+                    <table class="admin-table" id="reports-table">
+                        <thead>
+                            <tr>
+                                <th>Submitted</th>
+                                <th>Customer</th>
+                                <th>Tier</th>
+                                <th>Risk Level</th>
+                                <th>Summary</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="reports-tbody">
+                            <tr><td colspan="6" class="admin-table__loading">Loading reports…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
             <!-- ============ OPERATORS TAB (super admin only) ============ -->
             <section id="tab-operators" class="admin-panel" hidden>
 
@@ -171,8 +215,12 @@
 
                     <div class="admin-form__grid">
                         <div>
-                            <label for="operator-name">Name</label>
-                            <input type="text" id="operator-name" required>
+                            <label for="operator-first-name">First name</label>
+                            <input type="text" id="operator-first-name" required>
+                        </div>
+                        <div>
+                            <label for="operator-last-name">Last name</label>
+                            <input type="text" id="operator-last-name" required>
                         </div>
                         <div>
                             <label for="operator-email">Email</label>
@@ -186,6 +234,18 @@
                             <label>
                                 <input type="checkbox" id="operator-perm-manage-products">
                                 Can manage marketplace products
+                            </label>
+                        </div>
+                        <div class="admin-form__checkbox">
+                            <label>
+                                <input type="checkbox" id="operator-perm-view-reports">
+                                Can review submitted assessment reports
+                            </label>
+                        </div>
+                        <div class="admin-form__checkbox">
+                            <label>
+                                <input type="checkbox" id="operator-perm-manage-orders">
+                                Can manage order delivery status
                             </label>
                         </div>
                     </div>
@@ -202,7 +262,7 @@
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Role</th>
-                                <th>Manage Products</th>
+                                <th>Permissions</th>
                                 <th></th>
                             </tr>
                         </thead>

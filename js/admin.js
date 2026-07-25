@@ -65,6 +65,8 @@
         }
 
         initProducts();
+        initOrders();
+        initReports();
     }
 
     function initTabs() {
@@ -237,6 +239,138 @@
     }
 
     /* ============================================================
+       ORDERS (manage_orders permission)
+    ============================================================ */
+
+    async function initOrders() {
+        try {
+            const orders = await authedRequest("/admin/orders");
+            document.getElementById("orders-tab-btn").hidden = false;
+            renderOrdersTable(orders);
+        } catch (err) {
+            // No permission (403) — just don't show the tab at all.
+        }
+    }
+
+    function renderOrdersTable(orders) {
+        const tbody = document.getElementById("orders-tbody");
+
+        if (!orders.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="admin-table__loading">No orders yet.</td></tr>';
+            return;
+        }
+
+        const DELIVERY_OPTIONS = ["pending", "shipped", "delivered", "canceled"];
+
+        tbody.innerHTML = orders
+            .map((o) => {
+                const itemsSummary = (o.items || [])
+                    .map((i) => `${escapeHtml(i.name)} ×${i.qty}`)
+                    .join(", ");
+
+                const options = DELIVERY_OPTIONS.map(
+                    (opt) => `<option value="${opt}" ${o.delivery_status === opt ? "selected" : ""}>${opt}</option>`
+                ).join("");
+
+                return `
+                <tr data-id="${escapeHtml(o.id)}">
+                    <td><span class="admin-muted">#${escapeHtml(o.id.slice(0, 8))}</span></td>
+                    <td>${escapeHtml(o.customer_name || o.customer_email || "Guest")}</td>
+                    <td>${itemsSummary || "—"}</td>
+                    <td>${money(o.amount_total)}</td>
+                    <td>
+                        <span class="admin-status ${o.status === "paid" ? "admin-status--active" : "admin-status--inactive"}">
+                            ${escapeHtml(o.status)}
+                        </span>
+                    </td>
+                    <td>
+                        <select class="admin-delivery-select">${options}</select>
+                    </td>
+                </tr>`;
+            })
+            .join("");
+
+        tbody.querySelectorAll(".admin-delivery-select").forEach((select) => {
+            select.addEventListener("change", async (e) => {
+                const id = e.target.closest("tr").dataset.id;
+                try {
+                    await authedRequest("/admin/orders/" + encodeURIComponent(id) + "/delivery", {
+                        method: "PATCH",
+                        body: JSON.stringify({ delivery_status: e.target.value })
+                    });
+                } catch (err) {
+                    alert(err.message);
+                }
+            });
+        });
+    }
+
+    /* ============================================================
+       REPORTS (view_reports permission)
+    ============================================================ */
+
+    async function initReports() {
+        try {
+            const reports = await authedRequest("/admin/reports");
+            document.getElementById("reports-tab-btn").hidden = false;
+            renderReportsTable(reports);
+        } catch (err) {
+            // No permission (403) — just don't show the tab at all.
+        }
+    }
+
+    function renderReportsTable(reports) {
+        const tbody = document.getElementById("reports-tbody");
+
+        if (!reports.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="admin-table__loading">No reports submitted yet.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = reports
+            .map((r) => {
+                const date = new Date(r.created_at).toLocaleDateString();
+                const preview = r.summary.length > 90 ? r.summary.slice(0, 90) + "…" : r.summary;
+
+                return `
+                <tr data-id="${escapeHtml(r.id)}">
+                    <td>${date}</td>
+                    <td>${escapeHtml(r.customer_name || r.customer_email || "Guest")}</td>
+                    <td><span class="admin-status ${r.tier === "customized" ? "admin-status--active" : "admin-status--inactive"}">${escapeHtml(r.tier)}</span></td>
+                    <td>${escapeHtml(r.risk_level)}</td>
+                    <td>${escapeHtml(preview)}</td>
+                    <td class="admin-table__actions">
+                        <button type="button" class="button button-outline admin-view-report-btn">View</button>
+                    </td>
+                </tr>`;
+            })
+            .join("");
+
+        tbody.querySelectorAll(".admin-view-report-btn").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+                const id = e.target.closest("tr").dataset.id;
+                const report = reports.find((r) => r.id === id);
+                if (!report) return;
+
+                const details = [
+                    "Symptoms: " + (report.input.symptom_details || "—"),
+                    "Breakfast: " + (report.input.breakfast || "—"),
+                    "Lunch: " + (report.input.lunch || "—"),
+                    "Dinner: " + (report.input.dinner || "—"),
+                    "Sleep: " + (report.input.sleep || "—"),
+                    "",
+                    "Summary: " + report.summary,
+                    "Risk level: " + report.risk_level,
+                    "Recommendations:",
+                    ...report.recommendations.map((rec) => "  • " + rec)
+                ].join("\n");
+
+                alert(details);
+            });
+        });
+    }
+
+    /* ============================================================
        OPERATORS (super admin only)
     ============================================================ */
 
@@ -263,11 +397,27 @@
             return;
         }
 
+        const PERMISSION_LABELS = {
+            manage_products: "Products",
+            view_reports: "Reports",
+            manage_orders: "Orders"
+        };
+
         tbody.innerHTML = operators
             .map((op) => {
                 const isSelf = op.id === me.id;
                 const isSuper = op.role === "super_admin";
-                const checked = op.permissions && op.permissions.manage_products ? "checked" : "";
+                const perms = op.permissions || {};
+
+                const permCheckboxes = Object.keys(PERMISSION_LABELS)
+                    .map(
+                        (key) => `
+                        <label class="admin-perm-toggle">
+                            <input type="checkbox" class="admin-perm-checkbox" data-permission="${key}" ${perms[key] ? "checked" : ""}>
+                            ${PERMISSION_LABELS[key]}
+                        </label>`
+                    )
+                    .join("");
 
                 return `
                 <tr data-id="${escapeHtml(op.id)}">
@@ -275,13 +425,7 @@
                     <td>${escapeHtml(op.email)}</td>
                     <td>${isSuper ? "Super Admin" : "Operator"}</td>
                     <td>
-                        ${
-                            isSuper
-                                ? '<span class="admin-muted">Full access</span>'
-                                : `<label class="admin-checkbox-cell">
-                                     <input type="checkbox" class="admin-perm-checkbox" ${checked}>
-                                   </label>`
-                        }
+                        ${isSuper ? '<span class="admin-muted">Full access</span>' : `<div class="admin-perm-toggles">${permCheckboxes}</div>`}
                     </td>
                     <td class="admin-table__actions">
                         ${
@@ -296,11 +440,17 @@
 
         tbody.querySelectorAll(".admin-perm-checkbox").forEach((cb) => {
             cb.addEventListener("change", async (e) => {
-                const id = e.target.closest("tr").dataset.id;
+                const row = e.target.closest("tr");
+                const id = row.dataset.id;
+                const permissions = {};
+                row.querySelectorAll(".admin-perm-checkbox").forEach((box) => {
+                    permissions[box.dataset.permission] = box.checked;
+                });
+
                 try {
                     await authedRequest("/admin/operators/" + encodeURIComponent(id), {
                         method: "PATCH",
-                        body: JSON.stringify({ permissions: { manage_products: e.target.checked } })
+                        body: JSON.stringify({ permissions })
                     });
                 } catch (err) {
                     alert(err.message);
@@ -330,11 +480,16 @@
         clearFormError(form);
 
         const payload = {
-            name: document.getElementById("operator-name").value.trim(),
+            name: [
+                document.getElementById("operator-first-name").value.trim(),
+                document.getElementById("operator-last-name").value.trim()
+            ].filter(Boolean).join(" "),
             email: document.getElementById("operator-email").value.trim(),
             password: document.getElementById("operator-password").value,
             permissions: {
-                manage_products: document.getElementById("operator-perm-manage-products").checked
+                manage_products: document.getElementById("operator-perm-manage-products").checked,
+                view_reports: document.getElementById("operator-perm-view-reports").checked,
+                manage_orders: document.getElementById("operator-perm-manage-orders").checked
             }
         };
 

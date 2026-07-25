@@ -75,14 +75,38 @@ async function apiRequest(path, options = {}) {
     }
 
     if (!response.ok) {
-        const detail = data && data.detail;
-        throw new Error(
-            detail ||
-            "Can't reach the server right now. The backend may not be deployed yet — please try again later."
-        );
+        throw new Error(formatErrorDetail(data && data.detail));
     }
 
     return data;
+}
+
+/* Turns a FastAPI error `detail` into a readable string. It's usually a
+   plain string, but on 422 validation errors FastAPI sends an array of
+   {loc, msg, type} objects instead — which, un-handled, stringifies to
+   "[object Object],[object Object]" if just thrown directly. */
+function formatErrorDetail(detail) {
+    const fallback = "Can't reach the server right now. The backend may not be deployed yet — please try again later.";
+
+    if (!detail) return fallback;
+    if (typeof detail === "string") return detail;
+
+    if (Array.isArray(detail)) {
+        const messages = detail
+            .map((item) => {
+                if (typeof item === "string") return item;
+                if (item && typeof item === "object") {
+                    const field = Array.isArray(item.loc) ? item.loc[item.loc.length - 1] : null;
+                    return field ? `${field}: ${item.msg}` : item.msg;
+                }
+                return null;
+            })
+            .filter(Boolean);
+
+        return messages.length ? messages.join("; ") : fallback;
+    }
+
+    return fallback;
 }
 
 async function signup({ name, email, password }) {

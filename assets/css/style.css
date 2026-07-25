@@ -3474,3 +3474,34 @@ body.cart-open {
     border: 1px solid #F5C2C2;
     color: #B42318;
 }
+
+.admin-perm-toggles {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.admin-perm-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.admin-perm-toggle input {
+    width: 16px;
+    height: 16px;
+}
+
+.admin-delivery-select {
+    padding: 6px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: .8rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    background: white;
+    color: var(--ink);
+}

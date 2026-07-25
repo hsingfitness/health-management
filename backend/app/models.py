@@ -68,6 +68,8 @@ class Order(Base):
     currency = Column(String(10), default="usd")
     stripe_session_id = Column(String(255), unique=True, nullable=True)
     status = Column(String(20), default="pending")  # pending -> paid | canceled
+    # Order fulfillment, separate from payment status: "pending" -> "shipped" -> "delivered"
+    delivery_status = Column(String(20), nullable=False, default="pending")
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
