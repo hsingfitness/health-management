@@ -45,3 +45,25 @@ app.include_router(contact.router, prefix="/api")
 @app.get("/")
 def health_check():
     return {"status": "ok"}
+
+
+@app.get("/api/status")
+def integration_status():
+    """
+    Reports which optional integrations have credentials configured,
+    without ever exposing the actual secret values. Useful for diagnosing
+    'it should be set but the server says it isn't' issues.
+    """
+    return {
+        "database": bool(settings.DATABASE_URL and not settings.DATABASE_URL.startswith("sqlite")),
+        "gemini_configured": bool(settings.GEMINI_API_KEY),
+        "stripe_configured": bool(settings.STRIPE_SECRET_KEY),
+        "gmail_address_set": bool(settings.GMAIL_ADDRESS),
+        "gmail_address_value_preview": (
+            settings.GMAIL_ADDRESS[:3] + "***" + settings.GMAIL_ADDRESS[-8:]
+            if settings.GMAIL_ADDRESS and "@" in settings.GMAIL_ADDRESS
+            else None
+        ),
+        "gmail_app_password_set": bool(settings.GMAIL_APP_PASSWORD),
+        "gmail_app_password_length": len(settings.GMAIL_APP_PASSWORD) if settings.GMAIL_APP_PASSWORD else 0,
+    }
