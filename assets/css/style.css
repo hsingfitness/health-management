@@ -3416,6 +3416,10 @@ body.cart-open {
     font-size: .82rem;
 }
 
+.assessment-tier-badge[hidden] {
+    display: none;
+}
+
 .assessment-gate {
     display: flex;
     flex-direction: column;
@@ -3426,6 +3430,10 @@ body.cart-open {
     background: white;
     border: 1px solid #DDE3EA;
     border-radius: var(--radius);
+}
+
+.assessment-gate[hidden] {
+    display: none;
 }
 
 .assessment-gate__spinner {
