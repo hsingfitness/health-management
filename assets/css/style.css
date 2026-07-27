@@ -3513,3 +3513,25 @@ body.cart-open {
     background: white;
     color: var(--ink);
 }
+
+.assessment-upsell {
+    margin-top: 24px;
+    padding: 24px 28px;
+    text-align: center;
+    background: #EAF8F4;
+    border: 1px solid #CFEFE5;
+    border-radius: var(--radius);
+}
+
+.assessment-upsell p {
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 14px;
+}
+
+.assessment-upsell__buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}

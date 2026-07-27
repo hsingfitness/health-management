@@ -399,8 +399,7 @@
 
         const PERMISSION_LABELS = {
             manage_products: "Products",
-            view_reports: "Reports",
-            manage_orders: "Orders"
+            manage_reports: "Reports & Delivery"
         };
 
         tbody.innerHTML = operators
@@ -488,8 +487,7 @@
             password: document.getElementById("operator-password").value,
             permissions: {
                 manage_products: document.getElementById("operator-perm-manage-products").checked,
-                view_reports: document.getElementById("operator-perm-view-reports").checked,
-                manage_orders: document.getElementById("operator-perm-manage-orders").checked
+                manage_reports: document.getElementById("operator-perm-manage-reports").checked
             }
         };
 

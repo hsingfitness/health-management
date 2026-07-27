@@ -105,7 +105,7 @@ def remove_operator(
 @router.get("/orders", response_model=list[AdminOrderOut])
 def list_all_orders(
     db: Session = Depends(get_db),
-    _current_user: User = Depends(require_permission("manage_orders")),
+    _current_user: User = Depends(require_permission("manage_reports")),
 ):
     orders = db.query(Order).order_by(Order.created_at.desc()).all()
     customers = {
@@ -133,7 +133,7 @@ def update_delivery_status(
     order_id: str,
     payload: DeliveryStatusUpdate,
     db: Session = Depends(get_db),
-    _current_user: User = Depends(require_permission("manage_orders")),
+    _current_user: User = Depends(require_permission("manage_reports")),
 ):
     order = db.query(Order).filter(Order.id == order_id).first()
     if not order:
@@ -163,7 +163,7 @@ def update_delivery_status(
 @router.get("/reports", response_model=list[AdminReportOut])
 def list_all_reports(
     db: Session = Depends(get_db),
-    _current_user: User = Depends(require_permission("view_reports")),
+    _current_user: User = Depends(require_permission("manage_reports")),
 ):
     reports = db.query(Report).order_by(Report.created_at.desc()).all()
     customers = {

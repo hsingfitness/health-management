@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Get our most advanced VIP AI health analysis — personalized risk prediction, nutrition and exercise planning, priority support.">
+    <meta name="keywords" content="VIP health assessment, personalized risk model, priority health analysis">
+    <meta name="author" content="Health Management">
+
+    <title>VIP Analysis | Health Management</title>
+
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="assessment-page" data-tier="vip">
+
+<!-- =========================================
+     HEADER
+========================================= -->
+
+<header>
+
+    <div class="container nav-container">
+
+        <a href="index.html" class="brand">
+
+            <span class="brand-logo">
+
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+
+                    <path
+                        d="M2 12h5l2-6 4 12 2-6h7"
+                        stroke="#10A386"
+                        stroke-width="2.2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"/>
+
+                </svg>
+
+            </span>
+
+            <span class="brand-name">
+
+                Health Management
+
+            </span>
+
+        </a>
+
+                <button type="button" class="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+        <div class="nav-right">
+
+            <nav>
+
+                <ul>
+
+                    <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+
+
+                    <li><a href="marketplace.html" data-i18n="nav.marketplace">Marketplace</a></li>
+
+                    <li class="dropdown">
+
+                        <a href="#" data-i18n="nav.fitness">Fitness</a>
+
+                        <div class="dropdown-menu">
+
+                            <a href="fitness/strength.html" data-i18n="nav.strength">Strength</a>
+
+                            <a href="fitness/control.html" data-i18n="nav.control">Control</a>
+
+                            <a href="fitness/power.html" data-i18n="nav.power">Power</a>
+
+                        </div>
+
+                    </li>
+
+                    <li><a href="contact.html" data-i18n="nav.contact">Contact</a></li>
+
+                </ul>
+
+            </nav>
+
+            <div class="nav-actions">
+
+                <a href="marketplace.html" class="btn-cart" aria-label="Shopping cart">
+
+                    <span aria-hidden="true">🛒</span>
+
+                </a>
+
+                <span id="nav-auth-slot">
+                <a href="login.html" class="btn-login">
+
+                    Log In
+
+                </a>
+                </span>
+
+                <div class="language-dropdown">
+
+                    <button class="btn-language">
+
+                        🌐 EN
+
+                    </button>
+
+                    <div class="language-menu">
+
+                        <a href="#">🇺🇸 English</a>
+
+                        <a href="#">🇨🇳 中文</a>
+
+                        <a href="#">🇯🇵 日本語</a>
+
+                        <a href="#">🇰🇷 한국어</a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+<main class="assessment-shell">
+
+    <section class="guest-assessment" aria-labelledby="assessment-title">
+        <a href="index.html" class="assessment-back">
+            <span aria-hidden="true">&larr;</span>
+            Home
+        </a>
+
+        <div class="assessment-intro">
+            <h1 id="assessment-title">Health Assessment</h1>
+            <p>Our most advanced analysis — personalized risk prediction, nutrition and exercise planning, and priority support.</p>
+        </div>
+
+        <div class="assessment-tier-badge" id="assessment-tier-badge" hidden>
+            <span id="assessment-tier-label"></span>
+        </div>
+
+        <div class="assessment-gate" id="assessment-gate" hidden>
+            <div class="assessment-gate__spinner" aria-hidden="true"></div>
+            <p id="assessment-gate-message">Checking your account…</p>
+            <a href="index.html" class="button button-outline" id="assessment-gate-home-link" hidden>Back to Home</a>
+            <p id="assessment-gate-debug" style="margin-top:14px;font-size:.72rem;color:#9CA3AF;"></p>
+        </div>
+
+        <form class="guest-assessment-form" id="assessment-form" action="#" method="post">
+            <p id="assessment-error" class="form-error" hidden></p>
+
+            <article class="assessment-form-card">
+                <div class="assessment-card-heading">
+                    <h2>Detailed Analysis</h2>
+                    <p>Enter your condition and upload supporting documents.</p>
+                </div>
+
+                <label class="sr-only" for="symptom-details">Detailed analysis</label>
+                <textarea id="symptom-details" name="symptom_details" placeholder="Please describe in detail what you are feeling, when it started, and any specific concerns..."></textarea>
+            </article>
+
+            <article class="assessment-form-card nutrition-card">
+                <div class="assessment-card-heading">
+                    <h2>Daily Nutrition Log</h2>
+                </div>
+
+                <div class="assessment-field-group">
+                    <label for="breakfast">Breakfast (Time/Food)</label>
+                    <input id="breakfast" name="breakfast" type="text" placeholder="e.g. 8:00am — Oatmeal with berries">
+                </div>
+
+                <div class="assessment-field-group">
+                    <label for="lunch">Lunch (Time/Food)</label>
+                    <input id="lunch" name="lunch" type="text" placeholder="e.g. 12:30pm — Grilled chicken salad">
+                </div>
+
+                <div class="assessment-field-group">
+                    <label for="dinner">Dinner (Time/Food)</label>
+                    <input id="dinner" name="dinner" type="text" placeholder="e.g. 7:00pm — Salmon with vegetables">
+                </div>
+
+                <div class="assessment-field-group">
+                    <label for="sleep">Sleep &amp; Wake Time</label>
+                    <input id="sleep" name="sleep" type="text" placeholder="e.g. Sleep 11pm — Wake 7am">
+                </div>
+            </article>
+
+            <article class="assessment-form-card">
+                <div class="assessment-card-heading">
+                    <h2>Upload Reports (Optional)</h2>
+                </div>
+
+                <label class="report-upload" for="health-reports">
+                    <input id="health-reports" name="health_reports" type="file" accept=".pdf,.jpg,.jpeg,.png" multiple>
+                    <span class="upload-icon" aria-hidden="true">⇧</span>
+                    <span class="upload-title">Click or drag to upload reports</span>
+                    <span class="upload-note">Supports PDF, JPG, PNG (Max 10MB)</span>
+                </label>
+            </article>
+
+            <button class="analysis-submit" type="submit" id="analysis-submit-btn">
+                <span aria-hidden="true">✦</span>
+                Get VIP Analysis
+            </button>
+        </form>
+
+        <article class="assessment-form-card assessment-result" id="assessment-result" hidden>
+            <div class="assessment-card-heading">
+                <h2>Your Analysis</h2>
+                <p id="result-tier-note">Generated from what you described. Not a medical diagnosis.</p>
+            </div>
+
+            <div class="assessment-result__risk">
+                <span>Risk Level</span>
+                <strong id="result-risk-level"></strong>
+            </div>
+
+            <p id="result-summary" class="assessment-result__summary"></p>
+
+            <div class="assessment-result__recs">
+                <span>Recommendations</span>
+                <ul id="result-recommendations"></ul>
+            </div>
+
+            <p id="result-disclaimer" class="assessment-result__disclaimer"></p>
+        </article>
+    </section>
+</main>
+
+<script src="js/stripe-links.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/paywall.js"></script>
+<script src="js/assessment.js"></script>
+<script src="js/i18n/translations.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>

@@ -20,6 +20,13 @@
         return new URLSearchParams(window.location.search).get(name);
     }
 
+    function requiredTier() {
+        // A dedicated page (assessment_member.html, assessment_vip.html) can
+        // just declare its tier directly: <body data-tier="member">.
+        // Falls back to ?unlock=member for the old single-page flow.
+        return document.body.dataset.tier || qs("unlock");
+    }
+
     function clearQueryParams() {
         const url = new URL(window.location.href);
         url.search = "";
@@ -104,14 +111,18 @@
         }
     }
 
-    async function startCheckout(plan) {
+    async function startCheckout(plan, currentPage) {
         showGate("Redirecting you to secure checkout…", false);
         try {
+            const successPath = document.body.dataset.tier
+                ? "/" + currentPage
+                : "/" + currentPage + "?unlock=" + plan;
+
             const data = await authedRequest("/payments/create-checkout-session", {
                 method: "POST",
                 body: JSON.stringify({
                     items: [{ id: "plan-" + plan, name: PLAN_NAMES[plan], price: PLAN_PRICES[plan], qty: 1 }],
-                    success_path: "/assessment.html?unlock=" + plan,
+                    success_path: successPath,
                     cancel_path: "/index.html"
                 })
             });
@@ -121,7 +132,7 @@
         }
     }
 
-    async function verifyOrder(orderId, unlock) {
+    async function verifyOrder(orderId, tier) {
         showGate("Confirming your payment…", false);
         try {
             const order = await authedRequest("/payments/orders/" + orderId + "/verify", { method: "POST" });
@@ -136,7 +147,7 @@
 
             const me = await refreshUser();
             clearQueryParams();
-            showForm(me ? me.plan : unlock);
+            showForm(me ? me.plan : tier);
         } catch (err) {
             showGate(err.message || "Couldn't confirm your payment.", true);
         }
@@ -145,22 +156,25 @@
     async function init() {
         if (!el("assessment-gate")) return; // paywall markup not on this page
 
-        const unlock = qs("unlock");
+        const tier = requiredTier();
         const orderId = qs("order");
+        const currentPage = window.location.pathname.split("/").pop() || "assessment.html";
 
-        if (!unlock) {
-            showForm(null);
+        if (!tier || tier === "free") {
+            showForm(tier === "free" ? "free" : null);
             return;
         }
 
         if (typeof isLoggedIn !== "function" || !isLoggedIn()) {
-            const redirectTarget = "assessment.html?unlock=" + encodeURIComponent(unlock);
+            const redirectTarget = document.body.dataset.tier
+                ? currentPage
+                : currentPage + "?unlock=" + encodeURIComponent(tier);
             window.location.href = "login.html?redirect=" + encodeURIComponent(redirectTarget);
             return;
         }
 
         if (orderId) {
-            await verifyOrder(orderId, unlock);
+            await verifyOrder(orderId, tier);
             return;
         }
 
@@ -178,18 +192,20 @@
         }
 
         if (!me) {
-            const redirectTarget = "assessment.html?unlock=" + encodeURIComponent(unlock);
+            const redirectTarget = document.body.dataset.tier
+                ? currentPage
+                : currentPage + "?unlock=" + encodeURIComponent(tier);
             window.location.href = "login.html?redirect=" + encodeURIComponent(redirectTarget);
             return;
         }
 
-        if ((PLAN_RANK[me.plan] || 0) >= (PLAN_RANK[unlock] || 0)) {
+        if ((PLAN_RANK[me.plan] || 0) >= (PLAN_RANK[tier] || 0)) {
             clearQueryParams();
             showForm(me.plan);
             return;
         }
 
-        await startCheckout(unlock);
+        await startCheckout(tier, currentPage);
     }
 
     document.addEventListener("DOMContentLoaded", init);

@@ -126,7 +126,7 @@ class ProductUpdate(BaseModel):
 
 # ---------- Admin: operator management ----------
 
-ALLOWED_PERMISSIONS = ["manage_products", "view_reports", "manage_orders"]
+ALLOWED_PERMISSIONS = ["manage_products", "manage_reports"]
 
 
 class OperatorOut(BaseModel):
