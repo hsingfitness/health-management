@@ -61,6 +61,24 @@ function initAssessmentForm() {
         const btn = document.getElementById("analysis-submit-btn");
         const originalLabel = btn.innerHTML;
         btn.disabled = true;
+        btn.textContent = "Checking access…";
+
+        if (typeof window.checkAssessmentAccess === "function") {
+            let canProceed;
+            try {
+                canProceed = await window.checkAssessmentAccess(form);
+            } catch (err) {
+                canProceed = false;
+            }
+            if (!canProceed) {
+                // checkAssessmentAccess already handled it: either the page
+                // is navigating away (login/checkout), or it showed an error.
+                btn.disabled = false;
+                btn.innerHTML = originalLabel;
+                return;
+            }
+        }
+
         btn.textContent = "Analyzing…";
 
         try {
