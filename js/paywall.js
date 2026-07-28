@@ -1,20 +1,22 @@
 /* =========================================================
    Health Management — Assessment Paywall
-   Handles the ?unlock=member / ?unlock=vip flow from the
-   homepage journey cards: require login, check whether the
-   user already has that plan, otherwise send them to Stripe
-   Checkout, then verify payment when they land back here.
+   The form is always visible immediately on Member/VIP pages.
+   Payment is only checked when the user clicks Submit: if they
+   haven't paid for this tier yet, we save their form answers,
+   send them to login (if needed) then Stripe Checkout, and
+   auto-submit their saved answers once payment is confirmed.
 ========================================================= */
 
 (function () {
     "use strict";
 
-    const PLAN_PRICES = { member: 20, vip: 9.99 };
+    const PLAN_PRICES = { member: 200, vip: 100 };
     const PLAN_NAMES = {
         member: "Member Health Dashboard — One-off unlock",
         vip: "VIP Personalized Risk Model — Upgrade"
     };
     const PLAN_RANK = { free: 0, member: 1, vip: 2 };
+    const PENDING_KEY = "hm_pending_assessment";
 
     function qs(name) {
         return new URLSearchParams(window.location.search).get(name);
@@ -41,7 +43,6 @@
         el("assessment-gate").hidden = false;
         el("assessment-gate-message").textContent = message;
         el("assessment-gate-home-link").hidden = !showHomeLink;
-        document.querySelector(".assessment-intro").hidden = true;
         el("assessment-form").hidden = true;
 
         const debug = el("assessment-gate-debug");
@@ -49,9 +50,6 @@
             debug.textContent = "URL: " + window.location.pathname + window.location.search;
         }
 
-        // Safety net: whatever happens, never leave someone stuck on a
-        // spinner with no way out. If this gate is still showing after a
-        // few seconds, reveal the home link regardless.
         window.clearTimeout(showGate._timer);
         showGate._timer = window.setTimeout(function () {
             const homeLink = el("assessment-gate-home-link");
@@ -59,6 +57,12 @@
                 homeLink.hidden = false;
             }
         }, 6000);
+    }
+
+    function hideGate() {
+        if (!el("assessment-gate")) return;
+        el("assessment-gate").hidden = true;
+        el("assessment-form").hidden = false;
     }
 
     function withTimeout(promise, ms) {
@@ -76,12 +80,9 @@
         return null;
     }
 
-    function showForm(plan) {
-        el("assessment-gate").hidden = true;
-        document.querySelector(".assessment-intro").hidden = false;
-        el("assessment-form").hidden = false;
-
+    function showTierBadge(plan) {
         const badge = el("assessment-tier-badge");
+        if (!badge) return;
         const label = planLabel(plan);
         if (label) {
             badge.hidden = false;
@@ -111,7 +112,32 @@
         }
     }
 
-    async function startCheckout(plan, currentPage) {
+    function savePendingFormData(form) {
+        const fields = ["symptom_details", "breakfast", "lunch", "dinner", "sleep"];
+        const data = {};
+        fields.forEach(function (name) {
+            data[name] = form[name] ? form[name].value : "";
+        });
+        sessionStorage.setItem(PENDING_KEY, JSON.stringify(data));
+    }
+
+    function restorePendingFormData(form) {
+        const raw = sessionStorage.getItem(PENDING_KEY);
+        if (!raw) return false;
+        sessionStorage.removeItem(PENDING_KEY);
+        try {
+            const data = JSON.parse(raw);
+            Object.keys(data).forEach(function (name) {
+                if (form[name]) form[name].value = data[name];
+            });
+            return true;
+        } catch (err) {
+            return false;
+        }
+    }
+
+    async function startCheckout(plan, currentPage, form) {
+        if (form) savePendingFormData(form);
         showGate("Redirecting you to secure checkout…", false);
         try {
             const successPath = document.body.dataset.tier
@@ -123,7 +149,7 @@
                 body: JSON.stringify({
                     items: [{ id: "plan-" + plan, name: PLAN_NAMES[plan], price: PLAN_PRICES[plan], qty: 1 }],
                     success_path: successPath,
-                    cancel_path: "/index.html"
+                    cancel_path: "/" + currentPage
                 })
             });
             window.location.href = data.checkout_url;
@@ -132,7 +158,8 @@
         }
     }
 
-    async function verifyOrder(orderId, tier) {
+    async function verifyOrderAndUnlock(orderId, tier) {
+        const form = el("assessment-form");
         showGate("Confirming your payment…", false);
         try {
             const order = await authedRequest("/payments/orders/" + orderId + "/verify", { method: "POST" });
@@ -147,65 +174,77 @@
 
             const me = await refreshUser();
             clearQueryParams();
-            showForm(me ? me.plan : tier);
+            hideGate();
+            showTierBadge(me ? me.plan : tier);
+
+            const restored = form && restorePendingFormData(form);
+            if (restored && form.requestSubmit) {
+                form.requestSubmit();
+            }
         } catch (err) {
             showGate(err.message || "Couldn't confirm your payment.", true);
         }
     }
 
-    async function init() {
-        if (!el("assessment-gate")) return; // paywall markup not on this page
-
+    /* ---------------------------------------------------------
+       Called by assessment.js right when the Submit button is
+       clicked, before it talks to the report-generation API.
+       Returns true => go ahead and generate the report now.
+       Returns false => access is being handled (redirecting to
+       login or Stripe); assessment.js should stop and wait.
+    --------------------------------------------------------- */
+    window.checkAssessmentAccess = async function (form) {
         const tier = requiredTier();
-        const orderId = qs("order");
         const currentPage = window.location.pathname.split("/").pop() || "assessment.html";
 
-        if (!tier || tier === "free") {
-            showForm(tier === "free" ? "free" : null);
-            return;
-        }
+        if (!tier || tier === "free") return true;
 
         if (typeof isLoggedIn !== "function" || !isLoggedIn()) {
+            savePendingFormData(form);
             const redirectTarget = document.body.dataset.tier
                 ? currentPage
                 : currentPage + "?unlock=" + encodeURIComponent(tier);
             window.location.href = "login.html?redirect=" + encodeURIComponent(redirectTarget);
-            return;
+            return false;
         }
-
-        if (orderId) {
-            await verifyOrder(orderId, tier);
-            return;
-        }
-
-        showGate("Checking your account…", false);
 
         let me;
         try {
             me = await withTimeout(refreshUser(), 20000);
         } catch (err) {
-            showGate(
-                "The server is taking a while to respond (it may be waking up from being idle). Please wait a moment and refresh.",
-                true
-            );
-            return;
+            if (typeof showAssessmentError === "function") {
+                showAssessmentError(
+                    "The server is taking a while to respond (it may be waking up from being idle). Please try again in a moment."
+                );
+            }
+            return false;
         }
 
-        if (!me) {
-            const redirectTarget = document.body.dataset.tier
-                ? currentPage
-                : currentPage + "?unlock=" + encodeURIComponent(tier);
-            window.location.href = "login.html?redirect=" + encodeURIComponent(redirectTarget);
-            return;
+        if (me && (PLAN_RANK[me.plan] || 0) >= (PLAN_RANK[tier] || 0)) {
+            showTierBadge(me.plan);
+            return true;
         }
 
-        if ((PLAN_RANK[me.plan] || 0) >= (PLAN_RANK[tier] || 0)) {
-            clearQueryParams();
-            showForm(me.plan);
-            return;
-        }
+        await startCheckout(tier, currentPage, form);
+        return false;
+    };
 
-        await startCheckout(tier, currentPage);
+    async function init() {
+        const form = el("assessment-form");
+        if (!form) return;
+
+        const tier = requiredTier();
+        const orderId = qs("order");
+
+        showTierBadge(tier === "free" ? null : tier);
+
+        if (orderId && tier && tier !== "free") {
+            if (typeof isLoggedIn === "function" && isLoggedIn()) {
+                await verifyOrderAndUnlock(orderId, tier);
+            } else {
+                clearQueryParams();
+            }
+        }
     }
 
     document.addEventListener("DOMContentLoaded", init);
