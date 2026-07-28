@@ -12,6 +12,46 @@
     "use strict";
 
     var STORAGE_KEY = "hm_cart_v1";
+    var LANG_KEY = "hm_lang";
+
+    var CART_STRINGS = {
+        title: { zh: "购物车", ja: "カート", ko: "장바구니" },
+        empty: { zh: "您的购物车是空的。", ja: "カートは空です。", ko: "장바구니가 비어 있습니다." },
+        browseMarketplace: { zh: "浏览商城", ja: "マーケットプレイスを見る", ko: "마켓플레이스 둘러보기" },
+        subtotal: { zh: "小计", ja: "小計", ko: "소계" },
+        note: {
+            zh: "可选的健康产品购买 — 非处方药。运费和税费将在结账时计算。",
+            ja: "任意のウェルネス商品購入です（処方薬ではありません）。送料・税金はチェックアウト時に計算されます。",
+            ko: "선택적 웰니스 구매입니다 — 처방약이 아닙니다. 배송비 및 세금은 결제 시 계산됩니다."
+        },
+        remove: { zh: "移除", ja: "削除", ko: "삭제" },
+        checkoutWithStripe: { zh: "使用 Stripe 结账 →", ja: "Stripeで支払う →", ko: "Stripe로 결제 →" },
+        checkoutNotSetUp: { zh: "结账功能尚未设置", ja: "決済はまだ設定されていません", ko: "아직 결제가 설정되지 않았습니다" },
+        splitNote: {
+            zh: "您的购物车中包含多个不同的商品。由于结账通过 Stripe Payment Links 处理，请为以下每件商品分别完成安全付款：",
+            ja: "複数の商品がカートに入っています。決済はStripe Payment Linksで行われるため、以下の商品ごとに個別にお支払いください：",
+            ko: "여러 종류의 상품이 장바구니에 있습니다. 결제는 Stripe Payment Links로 처리되므로 아래 각 상품에 대해 개별적으로 안전하게 결제해 주세요:"
+        },
+        payFor: { zh: "支付", ja: "支払う：", ko: "결제:" },
+        checkoutNotSetUpItem: { zh: "— 结账尚未设置", ja: "— 決済未設定", ko: "— 결제 미설정" },
+        addedToCart: { zh: "已加入购物车", ja: "をカートに追加しました", ko: "장바구니에 담았습니다" },
+        each: { zh: "/件", ja: "/個", ko: "/개" }
+    };
+
+    function currentLang() {
+        try {
+            return window.localStorage.getItem(LANG_KEY) || "en";
+        } catch (err) {
+            return "en";
+        }
+    }
+
+    function t(key, fallback) {
+        var lang = currentLang();
+        var entry = CART_STRINGS[key];
+        if (entry && entry[lang]) return entry[lang];
+        return fallback;
+    }
 
     /* --------------------------------
        State
@@ -150,8 +190,13 @@
 
     var drawerEl, overlayEl, itemsEl, subtotalEl, checkoutAreaEl, emptyEl;
 
-    function ensureDrawer() {
-        if (document.getElementById("cart-drawer")) return;
+    function ensureDrawer(forceRebuild) {
+        if (document.getElementById("cart-drawer") && !forceRebuild) return;
+
+        if (forceRebuild && document.getElementById("cart-drawer")) {
+            document.getElementById("cart-drawer").remove();
+            document.getElementById("cart-overlay").remove();
+        }
 
         overlayEl = document.createElement("div");
         overlayEl.className = "cart-overlay";
@@ -168,23 +213,23 @@
 
         drawerEl.innerHTML =
             '<div class="cart-drawer__header">' +
-                '<h2>Your Cart</h2>' +
+                '<h2>' + t("title", "Your Cart") + '</h2>' +
                 '<button type="button" class="cart-drawer__close" aria-label="Close cart">&times;</button>' +
             '</div>' +
             '<div class="cart-drawer__body">' +
                 '<div class="cart-empty" id="cart-empty">' +
                     '<span aria-hidden="true">🛒</span>' +
-                    '<p>Your cart is empty.</p>' +
-                    '<a href="' + assetPath("marketplace.html") + '" class="button button-outline">Browse Marketplace</a>' +
+                    '<p>' + t("empty", "Your cart is empty.") + '</p>' +
+                    '<a href="' + assetPath("marketplace.html") + '" class="button button-outline">' + t("browseMarketplace", "Browse Marketplace") + '</a>' +
                 '</div>' +
                 '<ul class="cart-items" id="cart-items"></ul>' +
             '</div>' +
             '<div class="cart-drawer__footer" id="cart-footer">' +
                 '<div class="cart-subtotal-row">' +
-                    '<span>Subtotal</span>' +
+                    '<span>' + t("subtotal", "Subtotal") + '</span>' +
                     '<strong id="cart-subtotal">$0.00</strong>' +
                 '</div>' +
-                '<p class="cart-note">Optional wellness purchases — not prescriptions. Shipping &amp; tax calculated at checkout.</p>' +
+                '<p class="cart-note">' + t("note", "Optional wellness purchases — not prescriptions. Shipping &amp; tax calculated at checkout.") + '</p>' +
                 '<div id="cart-checkout-area"></div>' +
             '</div>';
 
@@ -261,7 +306,7 @@
                 '<div class="cart-item__icon" aria-hidden="true">' + item.icon + '</div>' +
                 '<div class="cart-item__info">' +
                     '<span class="cart-item__name">' + escapeHtml(item.name) + '</span>' +
-                    '<span class="cart-item__price">' + formatPrice(item.price) + ' each</span>' +
+                    '<span class="cart-item__price">' + formatPrice(item.price) + ' ' + t("each", "each") + '</span>' +
                     '<div class="cart-item__qty">' +
                         '<button type="button" class="qty-btn" data-action="dec" aria-label="Decrease quantity">&minus;</button>' +
                         '<span aria-live="polite">' + item.qty + '</span>' +
@@ -270,7 +315,7 @@
                 '</div>' +
                 '<div class="cart-item__end">' +
                     '<strong>' + formatPrice(item.price * item.qty) + '</strong>' +
-                    '<button type="button" class="cart-item__remove" aria-label="Remove ' + escapeHtml(item.name) + '">Remove</button>' +
+                    '<button type="button" class="cart-item__remove" aria-label="Remove ' + escapeHtml(item.name) + '">' + t("remove", "Remove") + '</button>' +
                 '</div>';
 
             li.querySelector('[data-action="dec"]').addEventListener("click", function () {
@@ -304,12 +349,12 @@
             btn.className = "button cart-checkout-btn";
 
             if (link) {
-                btn.textContent = "Checkout with Stripe \u2192";
+                btn.textContent = t("checkoutWithStripe", "Checkout with Stripe \u2192");
                 btn.addEventListener("click", function () {
                     window.location.href = link;
                 });
             } else {
-                btn.textContent = "Checkout not set up yet";
+                btn.textContent = t("checkoutNotSetUp", "Checkout not set up yet");
                 btn.disabled = true;
                 btn.title = "This product doesn't have a Stripe Payment Link configured yet.";
             }
@@ -322,7 +367,10 @@
         // session, so offer a separate secure checkout per product.
         var note = document.createElement("p");
         note.className = "cart-note cart-note--split";
-        note.textContent = "You have items from multiple products. Since checkout is powered by Stripe Payment Links, please complete a quick secure payment for each product below:";
+        note.textContent = t(
+            "splitNote",
+            "You have items from multiple products. Since checkout is powered by Stripe Payment Links, please complete a quick secure payment for each product below:"
+        );
         checkoutAreaEl.appendChild(note);
 
         items.forEach(function (item) {
@@ -332,12 +380,12 @@
             row.className = "button button-outline cart-checkout-row";
 
             if (link) {
-                row.textContent = "Pay for " + item.name + " (\u00d7" + item.qty + ") \u2014 " + formatPrice(item.price * item.qty);
+                row.textContent = t("payFor", "Pay for") + " " + item.name + " (\u00d7" + item.qty + ") \u2014 " + formatPrice(item.price * item.qty);
                 row.addEventListener("click", function () {
                     window.open(link, "_blank", "noopener");
                 });
             } else {
-                row.textContent = item.name + " \u2014 checkout not set up yet";
+                row.textContent = item.name + " " + t("checkoutNotSetUpItem", "\u2014 checkout not set up yet");
                 row.disabled = true;
             }
 
@@ -403,7 +451,7 @@
                 if (!product.id || isNaN(product.price)) return;
 
                 addItem(product, 1);
-                showToast(product.name + " added to cart");
+                showToast(product.name + " " + t("addedToCart", "added to cart"));
 
                 btn.classList.add("cart-button--added");
                 window.setTimeout(function () {
@@ -433,6 +481,15 @@
         // Keep badge (and drawer, if open) in sync across tabs/pages
         window.addEventListener("storage", function (e) {
             if (e.key === STORAGE_KEY) renderAll();
+        });
+
+        // Rebuild the drawer's static shell (title, labels, buttons) when
+        // the language changes, since it's only built once and cached.
+        document.addEventListener("hm:languagechange", function () {
+            var wasOpen = drawerEl && !drawerEl.hasAttribute("hidden");
+            ensureDrawer(true);
+            renderAll();
+            if (wasOpen) openDrawer();
         });
     }
 

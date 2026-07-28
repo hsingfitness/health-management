@@ -177,6 +177,8 @@
         });
 
         translateAuthSlot(dict, code);
+
+        document.dispatchEvent(new CustomEvent("hm:languagechange", { detail: { lang: code } }));
     }
 
     // js/auth.js renders the Log In button / account menu dynamically,
