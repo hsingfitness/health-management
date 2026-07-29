@@ -1,0 +1,532 @@
+Phase 1 - 客户管理模块（Customer Management）。
+
+目标：
+
+实现一个完整的客户管理 CRUD：
+
+新增客户
+   ↓
+查询客户
+   ↓
+修改客户资料
+   ↓
+删除客户
+   ↓
+查询客户历史诊断
+
+技术：
+
+PostgreSQL
+SQLAlchemy ORM
+Python
+FastAPI（提供接口）
+项目结构
+HealthAI/
+
+app/
+
+├── database/
+│   ├── connection.py
+│   ├── base.py
+│   └── models.py
+│
+├── customer/
+│   ├── schema.py
+│   ├── service.py
+│   └── api.py
+│
+├── main.py
+1. Customer 数据表
+
+database/models.py
+
+from sqlalchemy import (
+    Column,
+    String,
+    Boolean,
+    DateTime
+)
+
+from datetime import datetime
+import uuid
+
+from database.base import Base
+
+
+class Customer(Base):
+
+    __tablename__ = "customers"
+
+
+    id = Column(
+        String,
+        primary_key=True,
+        default=lambda:str(uuid.uuid4())
+    )
+
+
+    name = Column(
+        String(100),
+        nullable=False
+    )
+
+
+    gender = Column(
+        String(20)
+    )
+
+
+    birthday = Column(
+        String(20)
+    )
+
+
+    phone = Column(
+        String(50)
+    )
+
+
+    email = Column(
+        String(200),
+        unique=True
+    )
+
+
+    address = Column(
+        String(300)
+    )
+
+
+    telegram_id = Column(
+        String(100)
+    )
+
+
+    whatsapp = Column(
+        String(50)
+    )
+
+
+    notification_enabled = Column(
+        Boolean,
+        default=True
+    )
+
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
+
+数据库：
+
+customers
+
+id
+name
+gender
+birthday
+phone
+email
+address
+telegram_id
+whatsapp
+notification_enabled
+created_at
+2. 数据输入格式
+customer/schema.py
+
+使用 Pydantic。
+
+from pydantic import BaseModel
+
+
+class CustomerCreate(BaseModel):
+
+    name:str
+
+    gender:str | None = None
+
+    birthday:str | None = None
+
+    phone:str | None = None
+
+    email:str | None = None
+
+    address:str | None = None
+
+    telegram_id:str | None = None
+
+    whatsapp:str | None = None
+
+
+
+class CustomerUpdate(BaseModel):
+
+    phone:str | None = None
+
+    email:str | None = None
+
+    address:str | None = None
+
+
+
+class CustomerResponse(BaseModel):
+
+    id:str
+
+    name:str
+
+    email:str | None
+
+    phone:str | None
+
+
+    class Config:
+
+        from_attributes=True
+3. 客户服务层
+customer/service.py
+
+这里负责业务逻辑。
+
+from database.models import Customer
+
+
+
+def create_customer(
+        db,
+        data
+):
+
+
+    customer = Customer(
+
+        name=data.name,
+
+        gender=data.gender,
+
+        birthday=data.birthday,
+
+        phone=data.phone,
+
+        email=data.email,
+
+        address=data.address,
+
+        telegram_id=data.telegram_id,
+
+        whatsapp=data.whatsapp
+
+    )
+
+
+    db.add(customer)
+
+    db.commit()
+
+    db.refresh(customer)
+
+
+    return customer
+
+
+
+def get_customers(db):
+
+
+    return db.query(
+        Customer
+    ).all()
+
+
+
+def get_customer(
+        db,
+        customer_id
+):
+
+
+    return db.query(
+        Customer
+    ).filter(
+
+        Customer.id == customer_id
+
+    ).first()
+
+
+
+def update_customer(
+        db,
+        customer,
+        data
+):
+
+
+    if data.phone:
+
+        customer.phone=data.phone
+
+
+    if data.email:
+
+        customer.email=data.email
+
+
+    if data.address:
+
+        customer.address=data.address
+
+
+
+    db.commit()
+
+    db.refresh(customer)
+
+
+    return customer
+
+
+
+def delete_customer(
+        db,
+        customer
+):
+
+
+    db.delete(customer)
+
+    db.commit()
+4. API接口
+customer/api.py
+from fastapi import APIRouter, Depends
+
+from database.connection import SessionLocal
+
+from customer.schema import *
+
+from customer.service import *
+
+
+router = APIRouter(
+    prefix="/customers"
+)
+
+
+
+def get_db():
+
+    db=SessionLocal()
+
+    try:
+
+        yield db
+
+    finally:
+
+        db.close()
+
+
+
+# 新增客户
+
+@router.post("/")
+def add_customer(
+    data:CustomerCreate,
+    db=Depends(get_db)
+):
+
+    return create_customer(
+        db,
+        data
+    )
+
+
+
+# 查询全部客户
+
+@router.get("/")
+def list_customer(
+    db=Depends(get_db)
+):
+
+    return get_customers(db)
+
+
+
+# 查询单个客户
+
+@router.get("/{id}")
+def detail_customer(
+    id:str,
+    db=Depends(get_db)
+):
+
+    return get_customer(
+        db,
+        id
+    )
+
+
+
+# 修改
+
+@router.put("/{id}")
+def edit_customer(
+    id:str,
+    data:CustomerUpdate,
+    db=Depends(get_db)
+):
+
+    customer=get_customer(
+        db,
+        id
+    )
+
+    return update_customer(
+        db,
+        customer,
+        data
+    )
+
+
+
+# 删除
+
+@router.delete("/{id}")
+def remove_customer(
+    id:str,
+    db=Depends(get_db)
+):
+
+    customer=get_customer(
+        db,
+        id
+    )
+
+    delete_customer(
+        db,
+        customer
+    )
+
+    return {
+        "message":"deleted"
+    }
+5. 主程序
+main.py
+from fastapi import FastAPI
+
+from customer.api import router
+
+
+app=FastAPI(
+
+    title="Health AI System"
+
+)
+
+
+app.include_router(
+    router
+)
+
+启动：
+
+uvicorn main:app --reload
+6. 测试接口
+
+打开：
+
+http://127.0.0.1:8000/docs
+
+FastAPI 自动生成管理界面。
+
+新增客户
+
+POST:
+
+{
+"name":"John Smith",
+"gender":"Male",
+"birthday":"1985-05-20",
+"phone":"+61400000000",
+"email":"john@test.com",
+"telegram_id":"123456"
+}
+
+返回：
+
+{
+"id":"a82d3xxx",
+"name":"John Smith",
+"email":"john@test.com",
+"phone":"+61400000000"
+}
+查询
+
+GET:
+
+/customers/
+
+返回：
+
+[
+{
+"name":"John Smith",
+"email":"john@test.com"
+}
+]
+7. 后续连接 AI
+
+以后 Phase 2：
+
+AI 每天运行：
+
+Scheduler
+
+↓
+
+get_customers()
+
+↓
+
+读取客户
+
+↓
+
+读取 Visit
+
+↓
+
+AI分析
+
+↓
+
+DailyAssessment
+
+↓
+
+发送消息
+
+客户模块不需要修改。
+
+Phase 1 客户管理完成：
+
+✅ PostgreSQL客户表
+✅ SQLAlchemy ORM
+✅ 新增客户
+✅ 查询客户
+✅ 修改客户
+✅ 删除客户
+✅ FastAPI接口
+✅ 可连接Web前端
+✅ 可连接AI每日诊断
+
+下一步可以继续做：
+
+Phase 1 - 诊断记录管理（Visit Management）
+
+即：
+
+客户 → 每次诊断 → 症状 → 图片 → 治疗方案 → 历史记录。
