@@ -1,0 +1,514 @@
+Phase 1 - 图片管理模块（Image Management）。
+
+目标：
+
+实现：
+
+客户
+  |
+  |
+  +---- 诊断记录 Visit
+             |
+             |
+             +---- 多张图片
+                    |
+                    ├── 上传
+                    ├── 保存路径
+                    ├── 查询
+                    ├── 删除
+                    └── 给AI分析
+
+设计原则：
+
+图片文件 不直接存 PostgreSQL
+PostgreSQL 保存 图片信息和路径
+图片保存本地（以后可切换 S3 / Azure Blob）
+项目结构
+HealthAI/
+
+app/
+
+├── database/
+│
+│   └── models.py
+
+├── image/
+│
+│   ├── model.py
+│   ├── schema.py
+│   ├── storage.py
+│   ├── service.py
+│   └── api.py
+
+├── storage/
+│
+│   └── images/
+
+└── main.py
+1. 数据库 Image 表
+database/models.py
+
+增加：
+
+from sqlalchemy import (
+    Column,
+    String,
+    Text,
+    DateTime,
+    ForeignKey
+)
+
+from datetime import datetime
+import uuid
+
+
+class Image(Base):
+
+    __tablename__ = "images"
+
+
+    id = Column(
+        String,
+        primary_key=True,
+        default=lambda:str(uuid.uuid4())
+    )
+
+
+    customer_id = Column(
+        String,
+        ForeignKey(
+            "customers.id"
+        )
+    )
+
+
+    visit_id = Column(
+        String,
+        ForeignKey(
+            "visits.id"
+        ),
+        nullable=True
+    )
+
+
+    filename = Column(
+        String(200)
+    )
+
+
+    file_path = Column(
+        Text
+    )
+
+
+    image_type = Column(
+        String(50)
+    )
+
+
+    description = Column(
+        Text
+    )
+
+
+    uploaded_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
+
+数据库：
+
+images
+
+id
+customer_id
+visit_id
+filename
+file_path
+image_type
+description
+uploaded_at
+2. 图片存储模块
+image/storage.py
+
+负责保存文件。
+
+import os
+import uuid
+
+
+IMAGE_FOLDER = "storage/images"
+
+
+
+def save_image(file):
+
+
+    os.makedirs(
+        IMAGE_FOLDER,
+        exist_ok=True
+    )
+
+
+    ext = file.filename.split(".")[-1]
+
+
+    filename = (
+        str(uuid.uuid4())
+        +
+        "."
+        +
+        ext
+    )
+
+
+    path=os.path.join(
+        IMAGE_FOLDER,
+        filename
+    )
+
+
+    with open(
+        path,
+        "wb"
+    ) as buffer:
+
+        buffer.write(
+            file.file.read()
+        )
+
+
+    return path
+
+例如：
+
+上传：
+
+shoulder.jpg
+
+保存：
+
+storage/images/
+
+a82f-xxxx.jpg
+3. 输入格式
+image/schema.py
+from pydantic import BaseModel
+
+
+
+class ImageInfo(BaseModel):
+
+    customer_id:str
+
+    visit_id:str | None = None
+
+    image_type:str | None = None
+
+    description:str | None = None
+4. 图片业务逻辑
+image/service.py
+from database.models import Image
+
+
+
+def create_image_record(
+        db,
+        data,
+        path,
+        filename
+):
+
+
+    image=Image(
+
+        customer_id=data.customer_id,
+
+        visit_id=data.visit_id,
+
+        filename=filename,
+
+        file_path=path,
+
+        image_type=data.image_type,
+
+        description=data.description
+
+    )
+
+
+    db.add(image)
+
+    db.commit()
+
+    db.refresh(image)
+
+
+    return image
+
+
+
+def get_customer_images(
+        db,
+        customer_id
+):
+
+
+    return db.query(
+        Image
+    ).filter(
+
+        Image.customer_id
+        ==
+        customer_id
+
+    ).all()
+
+
+
+def delete_image(
+        db,
+        image
+):
+
+    db.delete(image)
+
+    db.commit()
+5. 上传 API
+image/api.py
+from fastapi import (
+    APIRouter,
+    UploadFile,
+    File,
+    Form,
+    Depends
+)
+
+
+from database.connection import SessionLocal
+
+from image.storage import save_image
+
+from image.service import create_image_record
+
+
+router=APIRouter(
+    prefix="/images"
+)
+
+
+
+def get_db():
+
+    db=SessionLocal()
+
+    try:
+
+        yield db
+
+    finally:
+
+        db.close()
+
+
+
+@router.post("/upload")
+def upload_image(
+
+    customer_id:str=Form(...),
+
+    visit_id:str=None,
+
+    image_type:str=Form(None),
+
+    description:str=Form(None),
+
+    file:UploadFile=File(...),
+
+    db=Depends(get_db)
+
+):
+
+
+    path=save_image(file)
+
+
+    data={
+
+        "customer_id":customer_id,
+
+        "visit_id":visit_id,
+
+        "image_type":image_type,
+
+        "description":description
+
+    }
+
+
+    return create_image_record(
+
+        db,
+
+        data,
+
+        path,
+
+        file.filename
+
+    )
+6. 查询客户图片
+
+增加 API：
+
+@router.get("/{customer_id}")
+def list_images(
+
+    customer_id:str,
+
+    db=Depends(get_db)
+
+):
+
+    return get_customer_images(
+
+        db,
+
+        customer_id
+
+    )
+7. main.py 加入
+from image.api import router as image_router
+
+
+app.include_router(
+    image_router
+)
+8. 上传测试
+
+访问：
+
+http://127.0.0.1:8000/docs
+
+选择：
+
+POST /images/upload
+
+上传：
+
+customer_id:
+abc123
+
+
+image_type:
+shoulder
+
+
+description:
+front view
+
+
+file:
+shoulder.jpg
+
+结果：
+
+数据库：
+
+images
+
+id:
+xxxx
+
+customer_id:
+abc123
+
+file_path:
+
+storage/images/a82xxx.jpg
+
+硬盘：
+
+storage/
+
+└── images/
+
+      └── a82xxx.jpg
+9. 给 AI 使用
+
+以后 Phase 2：
+
+AI读取：
+
+images = get_customer_images(
+    customer_id
+)
+
+得到：
+
+[
+{
+"type":"shoulder",
+"path":"storage/images/a82xxx.jpg"
+},
+{
+"type":"face",
+"path":"storage/images/b92xxx.jpg"
+}
+]
+
+然后：
+
+图片
+
+↓
+
+Vision AI
+
+↓
+
+分析结果
+
+↓
+
+DailyAssessment
+10. 云端迁移
+
+现在：
+
+storage/images/
+
+以后：
+
+AWS S3
+
+或
+
+Azure Blob
+
+或
+
+Cloudflare R2
+
+只需要替换：
+
+save_image()
+
+数据库结构不用变。
+
+Phase 1 图片管理完成：
+
+✅ 图片上传
+✅ 图片路径保存 PostgreSQL
+✅ 客户关联
+✅ 诊断记录关联
+✅ 图片查询
+✅ 图片删除基础
+✅ AI读取接口准备
+✅ 支持未来云存储迁移
+
+下一步可以做 Phase 1 - Visit（诊断记录管理），把：
+
+客户 → 每次诊断 → 图片 → AI分析 → 每日建议
+
+完整串起来。
