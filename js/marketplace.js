@@ -58,6 +58,24 @@
         if (el) el.textContent = n + (n === 1 ? " item" : " items");
     }
 
+    function renderCategoryPills(categories) {
+        const container = document.querySelector(".category-tabs");
+        if (!container || !Array.isArray(categories)) return;
+
+        const pillsHtml = categories
+            .map(
+                (c) =>
+                    `<button class="category-pill" type="button" data-category="${escapeHtml(c.id)}">
+                        <span aria-hidden="true">${escapeHtml(c.icon)}</span> ${escapeHtml(c.name)}
+                    </button>`
+            )
+            .join("");
+
+        container.innerHTML =
+            `<button class="category-pill category-pill--active" type="button" data-category="all">All Products</button>` +
+            pillsHtml;
+    }
+
     function wireCategoryFilters() {
         const pills = document.querySelectorAll(".category-pill");
         if (!pills.length) return;
@@ -70,14 +88,14 @@
                 pills.forEach((p) => p.classList.remove("category-pill--active"));
                 pill.classList.add("category-pill--active");
 
-                const label = pill.textContent.trim().toLowerCase();
-                const isAll = label.includes("all products");
+                const targetCategory = pill.dataset.category;
+                const isAll = !targetCategory || targetCategory === "all";
 
                 const cards = document.querySelectorAll(".product-card");
                 let visible = 0;
 
                 cards.forEach((card) => {
-                    const match = isAll || (card.dataset.category && label.includes(card.dataset.category));
+                    const match = isAll || card.dataset.category === targetCategory;
                     card.style.display = match ? "" : "none";
                     if (match) visible++;
                 });
@@ -87,7 +105,23 @@
         });
     }
 
+    async function loadCategories() {
+        if (typeof API_BASE === "undefined") return;
+        try {
+            const response = await fetch(API_BASE + "/categories");
+            if (!response.ok) return;
+            const categories = await response.json();
+            if (Array.isArray(categories) && categories.length) {
+                renderCategoryPills(categories);
+            }
+        } catch (err) {
+            // backend unreachable — keep the static fallback pills already in the HTML
+        }
+    }
+
     async function loadProducts() {
+        wireCategoryFilters();
+        await loadCategories();
         wireCategoryFilters();
 
         const grid = document.querySelector(".product-grid");

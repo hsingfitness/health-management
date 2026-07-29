@@ -58,6 +58,16 @@ class Product(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class Category(Base):
+    __tablename__ = "categories"
+
+    id = Column(String(40), primary_key=True)  # slug, e.g. "devices"
+    name = Column(String(80), nullable=False)  # display name, e.g. "Devices"
+    icon = Column(String(10), nullable=False, default="🏷")
+    sort_order = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 class Order(Base):
     __tablename__ = "orders"
 

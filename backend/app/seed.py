@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from .models import Product
+from .models import Category, Product
 
 # Mirrors the products originally hard-coded into marketplace.html, so
 # switching the page over to the API doesn't change what shoppers see.
@@ -149,6 +149,33 @@ def seed_products(db: Session) -> None:
         if data["id"] in existing_ids:
             continue
         db.add(Product(**data))
+        added = True
+
+    if added:
+        db.commit()
+
+
+DEFAULT_CATEGORIES = [
+    dict(id="supplements", name="Supplements", icon="💊", sort_order=1),
+    dict(id="herbs", name="Herbs", icon="🍃", sort_order=2),
+    dict(id="devices", name="Devices", icon="〽", sort_order=3),
+    dict(id="meals", name="Meals", icon="🍽", sort_order=4),
+    dict(id="wellness", name="Wellness", icon="♡", sort_order=5),
+]
+
+
+def seed_categories(db: Session) -> None:
+    """Same idempotent pattern as seed_products: insert any default
+    category that isn't already in the database yet. Once seeded,
+    categories are managed via the /admin/categories API (and the
+    admin.html dashboard) — this never overwrites existing rows."""
+    existing_ids = {c.id for c in db.query(Category.id).all()}
+
+    added = False
+    for data in DEFAULT_CATEGORIES:
+        if data["id"] in existing_ids:
+            continue
+        db.add(Category(**data))
         added = True
 
     if added:

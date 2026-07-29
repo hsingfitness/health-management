@@ -124,6 +124,31 @@ class ProductUpdate(BaseModel):
     sort_order: int | None = None
 
 
+# ---------- Categories ----------
+
+class CategoryOut(BaseModel):
+    id: str
+    name: str
+    icon: str
+    sort_order: int
+
+    class Config:
+        from_attributes = True
+
+
+class CategoryCreate(BaseModel):
+    id: str = Field(min_length=1, max_length=40, pattern=r"^[a-z0-9]+(-[a-z0-9]+)*$")
+    name: str = Field(min_length=1, max_length=80)
+    icon: str = Field(default="🏷", max_length=10)
+    sort_order: int = 0
+
+
+class CategoryUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=80)
+    icon: str | None = Field(default=None, max_length=10)
+    sort_order: int | None = None
+
+
 # ---------- Admin: operator management ----------
 
 ALLOWED_PERMISSIONS = ["manage_products", "manage_reports"]
