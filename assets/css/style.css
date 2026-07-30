@@ -1651,11 +1651,33 @@ h1{
 }
 
 .login-panel{
+    position:relative;
     background:white;
     border:1px solid var(--line);
     border-radius:28px;
     padding:30px;
     box-shadow:var(--shadow);
+}
+
+.login-panel__close{
+    position:absolute;
+    top:18px;
+    right:18px;
+    width:32px;
+    height:32px;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    background:#F1F5F9;
+    color:var(--muted);
+    font-size:1.1rem;
+    line-height:1;
+    transition:background var(--transition), color var(--transition);
+}
+
+.login-panel__close:hover{
+    background:#E4EAF1;
+    color:var(--ink);
 }
 
 .role-card{
