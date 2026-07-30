@@ -3964,3 +3964,84 @@ body.cart-open {
     gap: 12px;
     flex-wrap: wrap;
 }
+
+/* ===============================
+   ADMIN: PRODUCT LANGUAGE TABS
+=============================== */
+
+.admin-lang-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.admin-lang-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: white;
+    color: var(--muted);
+    font-size: .78rem;
+    font-weight: 700;
+}
+
+.admin-lang-tab.is-active {
+    border-color: var(--brand);
+    background: #EAF8F4;
+    color: var(--brand-dark);
+}
+
+.admin-lang-tab__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--brand);
+    display: inline-block;
+}
+
+.admin-lang-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.admin-lang-panel textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-size: .9rem;
+    font-family: inherit;
+    resize: vertical;
+    color: var(--ink);
+}
+
+.admin-lang-panel textarea:focus {
+    outline: none;
+    border-color: var(--brand);
+}
+
+.admin-lang-hint {
+    margin-top: 8px;
+    font-size: .74rem;
+    color: var(--muted);
+}
+
+.admin-product-langs {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.admin-lang-badge {
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: #F1F5F9;
+    color: var(--muted);
+    font-size: .62rem;
+    font-weight: 800;
+}

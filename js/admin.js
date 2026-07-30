@@ -29,6 +29,26 @@
         return "$" + Number(n).toFixed(2);
     }
 
+    const LANGUAGES = [
+        { code: "en", label: "EN" },
+        { code: "zh", label: "中文" },
+        { code: "ja", label: "日本語" },
+        { code: "ko", label: "한국어" }
+    ];
+
+    function displayName(product) {
+        return (product.name_i18n && (product.name_i18n.en || Object.values(product.name_i18n)[0])) || "(untitled)";
+    }
+
+    function displayDescription(product) {
+        return (product.description_i18n && (product.description_i18n.en || Object.values(product.description_i18n)[0])) || "";
+    }
+
+    function languageBadges(product) {
+        const present = LANGUAGES.filter((l) => product.name_i18n && product.name_i18n[l.code]);
+        return present.map((l) => `<span class="admin-lang-badge">${l.label}</span>`).join("");
+    }
+
     /* ---------- gate + init ---------- */
 
     async function init() {
@@ -253,6 +273,7 @@
 
         document.getElementById("product-form").addEventListener("submit", onProductFormSubmit);
         document.getElementById("product-cancel-edit").addEventListener("click", resetProductForm);
+        initProductLangTabs();
     }
 
     async function loadProducts() {
@@ -273,8 +294,9 @@
                 (p) => `
                 <tr data-id="${escapeHtml(p.id)}">
                     <td>
-                        <span class="admin-product-name">${escapeHtml(p.icon)} ${escapeHtml(p.name)}</span>
-                        <span class="admin-product-desc">${escapeHtml(p.description)}</span>
+                        <span class="admin-product-name">${escapeHtml(p.icon)} ${escapeHtml(displayName(p))}</span>
+                        <span class="admin-product-desc">${escapeHtml(displayDescription(p))}</span>
+                        <span class="admin-product-langs">${languageBadges(p)}</span>
                     </td>
                     <td>${escapeHtml(p.category)}</td>
                     <td>${money(p.price)}</td>
@@ -322,14 +344,21 @@
 
         document.getElementById("product-id").value = product.id;
         document.getElementById("product-id").disabled = true;
-        document.getElementById("product-name").value = product.name;
         document.getElementById("product-price").value = product.price;
         document.getElementById("product-category").value = product.category;
         document.getElementById("product-icon").value = product.icon;
         document.getElementById("product-badges").value = (product.badges || []).join(", ");
-        document.getElementById("product-description").value = product.description;
         document.getElementById("product-stripe-link").value = product.stripe_payment_link || "";
         document.getElementById("product-active").checked = product.is_active;
+
+        LANGUAGES.forEach((l) => {
+            const nameInput = document.querySelector(`.product-name-input[data-lang="${l.code}"]`);
+            const descInput = document.querySelector(`.product-description-input[data-lang="${l.code}"]`);
+            if (nameInput) nameInput.value = (product.name_i18n && product.name_i18n[l.code]) || "";
+            if (descInput) descInput.value = (product.description_i18n && product.description_i18n[l.code]) || "";
+        });
+        refreshLangTabDots();
+        switchLangTab("en");
 
         document.getElementById("product-form").scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -343,7 +372,37 @@
         document.getElementById("product-submit-btn").textContent = "Add Product";
         document.getElementById("product-cancel-edit").hidden = true;
         document.getElementById("product-active").checked = true;
+        document.querySelectorAll(".product-name-input, .product-description-input").forEach((el) => (el.value = ""));
+        refreshLangTabDots();
+        switchLangTab("en");
         clearFormError(form);
+    }
+
+    function switchLangTab(lang) {
+        document.querySelectorAll(".admin-lang-tab").forEach((tab) => {
+            tab.classList.toggle("is-active", tab.dataset.lang === lang);
+        });
+        document.querySelectorAll(".admin-lang-panel").forEach((panel) => {
+            panel.hidden = panel.dataset.langPanel !== lang;
+        });
+    }
+
+    function refreshLangTabDots() {
+        LANGUAGES.forEach((l) => {
+            const nameInput = document.querySelector(`.product-name-input[data-lang="${l.code}"]`);
+            const dot = document.querySelector(`.admin-lang-tab__dot[data-dot="${l.code}"]`);
+            if (!dot) return;
+            dot.hidden = !(nameInput && nameInput.value.trim());
+        });
+    }
+
+    function initProductLangTabs() {
+        document.querySelectorAll(".admin-lang-tab").forEach((tab) => {
+            tab.addEventListener("click", () => switchLangTab(tab.dataset.lang));
+        });
+        document.querySelectorAll(".product-name-input").forEach((input) => {
+            input.addEventListener("input", refreshLangTabDots);
+        });
     }
 
     async function onProductFormSubmit(e) {
@@ -357,9 +416,26 @@
             .map((s) => s.trim())
             .filter(Boolean);
 
+        const name_i18n = {};
+        const description_i18n = {};
+        LANGUAGES.forEach((l) => {
+            const nameInput = document.querySelector(`.product-name-input[data-lang="${l.code}"]`);
+            const descInput = document.querySelector(`.product-description-input[data-lang="${l.code}"]`);
+            const nameVal = nameInput ? nameInput.value.trim() : "";
+            const descVal = descInput ? descInput.value.trim() : "";
+            if (nameVal) name_i18n[l.code] = nameVal;
+            if (descVal) description_i18n[l.code] = descVal;
+        });
+
+        if (!name_i18n.en) {
+            showFormError(form, "English name is required (other languages are optional and fall back to English if left blank).");
+            switchLangTab("en");
+            return;
+        }
+
         const payload = {
-            name: document.getElementById("product-name").value.trim(),
-            description: document.getElementById("product-description").value.trim(),
+            name_i18n,
+            description_i18n,
             price: parseFloat(document.getElementById("product-price").value),
             category: document.getElementById("product-category").value,
             icon: document.getElementById("product-icon").value.trim() || "💊",
