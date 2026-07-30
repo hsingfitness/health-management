@@ -121,6 +121,39 @@
         updateItemCount(visible);
     }
 
+    const CATEGORY_NAME_TEXT = {
+        all: { zh: "全部商品", ja: "すべての商品", ko: "전체 상품" },
+        supplements: { zh: "保健品", ja: "サプリメント", ko: "보충제" },
+        herbs: { zh: "草本", ja: "ハーブ", ko: "허브" },
+        devices: { zh: "设备", ja: "デバイス", ko: "기기" },
+        meals: { zh: "餐食", ja: "ミール", ko: "식단" },
+        wellness: { zh: "身心健康", ja: "ウェルネス", ko: "웰니스" }
+    };
+
+    function categoryLabel(id, fallbackName) {
+        const lang = currentLang();
+        const entry = CATEGORY_NAME_TEXT[id];
+        return entry && entry[lang] ? entry[lang] : fallbackName;
+    }
+
+    function renderCategoryPills(categories) {
+        const container = document.querySelector(".category-tabs");
+        if (!container || !Array.isArray(categories)) return;
+
+        const pillsHtml = categories
+            .map(
+                (c) =>
+                    `<button class="category-pill" type="button" data-category="${escapeHtml(c.id)}">
+                        <span aria-hidden="true">${escapeHtml(c.icon)}</span> ${escapeHtml(categoryLabel(c.id, c.name))}
+                    </button>`
+            )
+            .join("");
+
+        container.innerHTML =
+            `<button class="category-pill category-pill--active" type="button" data-category="all">${escapeHtml(categoryLabel("all", "All Products"))}</button>` +
+            pillsHtml;
+    }
+
     function wireCategoryFilters() {
         const pills = document.querySelectorAll(".category-pill");
         if (!pills.length) return;
@@ -137,7 +170,23 @@
         });
     }
 
+    async function loadCategories() {
+        if (typeof API_BASE === "undefined") return;
+        try {
+            const response = await fetch(API_BASE + "/categories");
+            if (!response.ok) return;
+            const categories = await response.json();
+            if (Array.isArray(categories) && categories.length) {
+                renderCategoryPills(categories);
+            }
+        } catch (err) {
+            // backend unreachable — keep the static fallback pills already in the HTML
+        }
+    }
+
     async function loadProducts() {
+        wireCategoryFilters();
+        await loadCategories();
         wireCategoryFilters();
 
         const grid = document.querySelector(".product-grid");

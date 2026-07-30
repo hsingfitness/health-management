@@ -1,0 +1,560 @@
+hase 3 - 登录系统（JWT + 权限管理）。
+
+目标：
+
+给 Web 后台增加：
+
+管理员
+   |
+   ▼
+Login 页面
+   |
+   ▼
+验证用户名密码
+   |
+   ▼
+生成 JWT Token
+   |
+   ▼
+访问后台
+
+支持：
+
+✅ 管理员登录
+✅ 密码加密存储
+✅ JWT Token
+✅ 权限验证
+✅ 用户角色（Admin / Doctor / Staff）
+
+项目结构
+
+增加：
+
+HealthAI/
+
+app/
+
+├── auth/
+│
+│   ├── models.py        # 用户数据库
+│   ├── schema.py        # 输入格式
+│   ├── security.py      # 密码/JWT
+│   ├── service.py       # 登录逻辑
+│   └── api.py           # 登录接口
+│
+├── database/
+│
+│   └── models.py
+
+├── main.py
+1. 安装依赖
+pip install python-jose[cryptography]
+pip install passlib[bcrypt]
+pip install python-multipart
+2. 用户数据库表
+auth/models.py
+from sqlalchemy import (
+    Column,
+    String,
+    Boolean
+)
+
+from database.base import Base
+
+import uuid
+
+
+class User(Base):
+
+    __tablename__="users"
+
+
+    id = Column(
+        String,
+        primary_key=True,
+        default=lambda:str(uuid.uuid4())
+    )
+
+
+    username = Column(
+        String(50),
+        unique=True,
+        nullable=False
+    )
+
+
+    password_hash = Column(
+        String(200),
+        nullable=False
+    )
+
+
+    role = Column(
+        String(30),
+        default="staff"
+    )
+
+
+    active = Column(
+        Boolean,
+        default=True
+    )
+
+数据库：
+
+users
+
+id
+username
+password_hash
+role
+active
+3. 密码加密 + JWT
+auth/security.py
+from passlib.context import CryptContext
+
+from jose import jwt
+
+from datetime import datetime, timedelta
+
+
+
+SECRET_KEY = "CHANGE_THIS_SECRET"
+
+ALGORITHM = "HS256"
+
+
+
+pwd_context = CryptContext(
+
+    schemes=["bcrypt"]
+
+)
+
+
+
+def hash_password(password):
+
+    return pwd_context.hash(password)
+
+
+
+def verify_password(
+    password,
+    hashed
+):
+
+    return pwd_context.verify(
+
+        password,
+
+        hashed
+
+    )
+
+
+
+def create_token(username, role):
+
+
+    payload={
+
+        "sub":username,
+
+        "role":role,
+
+        "exp":
+
+        datetime.utcnow()
+
+        +
+
+        timedelta(hours=8)
+
+    }
+
+
+    return jwt.encode(
+
+        payload,
+
+        SECRET_KEY,
+
+        algorithm=ALGORITHM
+
+    )
+4. 登录输入格式
+auth/schema.py
+from pydantic import BaseModel
+
+
+
+class LoginRequest(BaseModel):
+
+    username:str
+
+    password:str
+
+
+
+class TokenResponse(BaseModel):
+
+    access_token:str
+
+    token_type:str
+5. 登录服务
+auth/service.py
+from auth.security import (
+
+    verify_password,
+
+    create_token
+
+)
+
+
+
+from auth.models import User
+
+
+
+def login(
+
+    db,
+
+    username,
+
+    password
+
+):
+
+
+    user=db.query(
+
+        User
+
+    ).filter(
+
+        User.username==username
+
+    ).first()
+
+
+
+    if not user:
+
+        return None
+
+
+
+    if not verify_password(
+
+        password,
+
+        user.password_hash
+
+    ):
+
+        return None
+
+
+
+    token=create_token(
+
+        user.username,
+
+        user.role
+
+    )
+
+
+    return token
+6. 登录 API
+auth/api.py
+from fastapi import APIRouter, Depends
+
+from database.connection import SessionLocal
+
+from auth.schema import LoginRequest
+
+from auth.service import login
+
+
+
+router=APIRouter(
+
+    prefix="/auth"
+
+)
+
+
+
+def get_db():
+
+    db=SessionLocal()
+
+    try:
+
+        yield db
+
+    finally:
+
+        db.close()
+
+
+
+@router.post("/login")
+def user_login(
+
+    data:LoginRequest,
+
+    db=Depends(get_db)
+
+):
+
+
+    token=login(
+
+        db,
+
+        data.username,
+
+        data.password
+
+    )
+
+
+    if not token:
+
+        return {
+
+            "error":
+
+            "Invalid login"
+
+        }
+
+
+
+    return {
+
+        "access_token":token,
+
+        "token_type":"bearer"
+
+    }
+7. 创建管理员账号
+
+第一次需要初始化。
+
+create_admin.py
+from database.connection import SessionLocal
+
+from auth.models import User
+
+from auth.security import hash_password
+
+
+
+db=SessionLocal()
+
+
+
+admin=User(
+
+    username="admin",
+
+    password_hash=
+
+    hash_password(
+        "123456"
+    ),
+
+    role="admin"
+
+)
+
+
+db.add(admin)
+
+db.commit()
+
+
+print(
+"Admin created"
+)
+
+运行：
+
+python create_admin.py
+
+生成：
+
+username:
+admin
+
+password:
+123456
+8. 登录测试
+
+启动：
+
+uvicorn app.main:app --reload
+
+访问：
+
+POST
+
+/auth/login
+
+输入：
+
+{
+"username":"admin",
+"password":"123456"
+}
+
+返回：
+
+{
+"access_token":
+"eyJhbGciOiJIUz..."
+,
+"token_type":
+"bearer"
+}
+9. 保护后台页面
+
+例如：
+
+客户列表：
+
+以前：
+
+@app.get("/customers")
+
+现在：
+
+@app.get(
+"/customers",
+dependencies=[
+Depends(get_current_user)
+]
+)
+
+没有 Token：
+
+401 Unauthorized
+
+有 Token：
+
+允许访问
+10. 权限管理
+
+例如：
+
+角色：
+
+admin
+
+    可以：
+    - 删除用户
+    - 修改权限
+    - 查看全部数据
+
+
+doctor
+
+    可以：
+    - 查看患者
+    - 修改诊断
+
+
+staff
+
+    可以：
+    - 上传图片
+    - 查看基础信息
+11. 完整登录流程
+管理员
+
+↓
+
+输入用户名密码
+
+↓
+
+FastAPI
+
+↓
+
+查询 PostgreSQL users
+
+↓
+
+验证 bcrypt密码
+
+↓
+
+生成 JWT
+
+↓
+
+返回 Token
+
+↓
+
+浏览器保存 Token
+
+↓
+
+访问后台
+
+↓
+
+JWT验证
+
+↓
+
+进入 Dashboard
+Phase 3 登录完成：
+
+✅ 用户表
+✅ 密码加密
+✅ JWT认证
+✅ 登录接口
+✅ 权限角色
+✅ 后台保护
+
+现在系统结构：
+
+                 Web Admin
+
+                    |
+                    ▼
+
+                 JWT Login
+
+                    |
+                    ▼
+
+              FastAPI Backend
+
+                    |
+        ┌───────────┼───────────┐
+        ▼           ▼           ▼
+
+   Customer     Image       AI Report
+
+                    |
+                    ▼
+
+              PostgreSQL
+
+下一步建议：
+
+Phase 3.5：React/Vue 前端 Dashboard（真正网页后台界面）
+
+或者
+
+Phase 4：Docker + 云端部署（本地系统上线）。

@@ -64,7 +64,8 @@
             initOperators(me);
         }
 
-        initProducts();
+        await initCategories();
+        await initProducts();
         initOrders();
         initReports();
     }
@@ -79,6 +80,160 @@
                 document.getElementById("tab-" + btn.dataset.tab).hidden = false;
             });
         });
+    }
+
+    /* ============================================================
+       CATEGORIES
+    ============================================================ */
+
+    let editingCategoryId = null;
+    let cachedCategories = [];
+
+    async function initCategories() {
+        try {
+            await loadCategories();
+            document.getElementById("categories-manager").hidden = false;
+        } catch (err) {
+            document.getElementById("categories-denied").hidden = false;
+            return;
+        }
+
+        document.getElementById("category-form").addEventListener("submit", onCategoryFormSubmit);
+        document.getElementById("category-cancel-edit").addEventListener("click", resetCategoryForm);
+    }
+
+    async function loadCategories() {
+        // Categories are public (GET /api/categories), but we still route
+        // through authedRequest here just so a 401/expired-token case is
+        // treated the same way as the rest of the admin panel.
+        const categories = await authedRequest("/categories");
+        cachedCategories = categories;
+        renderCategoriesTable(categories);
+        populateProductCategoryDropdown(categories);
+    }
+
+    function populateProductCategoryDropdown(categories) {
+        const select = document.getElementById("product-category");
+        if (!select) return;
+        const previousValue = select.value;
+        select.innerHTML = categories
+            .map((c) => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.icon)} ${escapeHtml(c.name)}</option>`)
+            .join("");
+        if (previousValue && categories.some((c) => c.id === previousValue)) {
+            select.value = previousValue;
+        }
+    }
+
+    function renderCategoriesTable(categories) {
+        const tbody = document.getElementById("categories-tbody");
+
+        if (!categories.length) {
+            tbody.innerHTML = '<tr><td colspan="4" class="admin-table__loading">No categories yet.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = categories
+            .map(
+                (c) => `
+                <tr data-id="${escapeHtml(c.id)}">
+                    <td>${escapeHtml(c.icon)} ${escapeHtml(c.name)}</td>
+                    <td><span class="admin-muted">${escapeHtml(c.id)}</span></td>
+                    <td>${c.sort_order}</td>
+                    <td class="admin-table__actions">
+                        <button type="button" class="button button-outline admin-edit-btn">Edit</button>
+                        <button type="button" class="button admin-delete-btn admin-delete-btn--danger">Delete</button>
+                    </td>
+                </tr>`
+            )
+            .join("");
+
+        tbody.querySelectorAll(".admin-edit-btn").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+                const id = e.target.closest("tr").dataset.id;
+                const category = cachedCategories.find((c) => c.id === id);
+                if (category) fillCategoryForm(category);
+            });
+        });
+
+        tbody.querySelectorAll(".admin-delete-btn").forEach((btn) => {
+            btn.addEventListener("click", async (e) => {
+                const id = e.target.closest("tr").dataset.id;
+                if (!confirm("Delete this category? This can't be undone.")) return;
+
+                try {
+                    await authedRequest("/admin/categories/" + encodeURIComponent(id), { method: "DELETE" });
+                    await loadCategories();
+                } catch (err) {
+                    // Most common case: category still has products using it —
+                    // the backend's error message already explains that clearly.
+                    alert(err.message);
+                }
+            });
+        });
+    }
+
+    function fillCategoryForm(category) {
+        editingCategoryId = category.id;
+        document.getElementById("category-form-title").textContent = "Edit Category";
+        document.getElementById("category-submit-btn").textContent = "Save Changes";
+        document.getElementById("category-cancel-edit").hidden = false;
+
+        document.getElementById("category-id").value = category.id;
+        document.getElementById("category-id").disabled = true;
+        document.getElementById("category-name").value = category.name;
+        document.getElementById("category-icon").value = category.icon;
+        document.getElementById("category-sort-order").value = category.sort_order;
+
+        document.getElementById("category-form").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function resetCategoryForm() {
+        editingCategoryId = null;
+        const form = document.getElementById("category-form");
+        form.reset();
+        document.getElementById("category-id").disabled = false;
+        document.getElementById("category-form-title").textContent = "Add a Category";
+        document.getElementById("category-submit-btn").textContent = "Add Category";
+        document.getElementById("category-cancel-edit").hidden = true;
+        clearFormError(form);
+    }
+
+    async function onCategoryFormSubmit(e) {
+        e.preventDefault();
+        const form = e.target;
+        clearFormError(form);
+
+        const sortOrderRaw = document.getElementById("category-sort-order").value;
+
+        const payload = {
+            name: document.getElementById("category-name").value.trim(),
+            icon: document.getElementById("category-icon").value.trim() || "🏷",
+            sort_order: sortOrderRaw === "" ? 0 : parseInt(sortOrderRaw, 10)
+        };
+
+        try {
+            if (editingCategoryId) {
+                await authedRequest("/admin/categories/" + encodeURIComponent(editingCategoryId), {
+                    method: "PUT",
+                    body: JSON.stringify(payload)
+                });
+            } else {
+                const id = document.getElementById("category-id").value.trim();
+                if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(id)) {
+                    showFormError(form, "Category ID must be lowercase letters, numbers, and dashes only (e.g. fitness-gear).");
+                    return;
+                }
+                await authedRequest("/admin/categories", {
+                    method: "POST",
+                    body: JSON.stringify(Object.assign({ id }, payload))
+                });
+            }
+
+            resetCategoryForm();
+            await loadCategories();
+        } catch (err) {
+            showFormError(form, err.message);
+        }
     }
 
     /* ============================================================

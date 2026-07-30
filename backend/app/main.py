@@ -3,8 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
 from .database import Base, SessionLocal, engine, run_column_migrations, run_data_backfills
-from .routers import admin, auth, contact, payments, products, reports
-from .seed import seed_products
+from .routers import admin, auth, categories, contact, payments, products, reports
+from .seed import seed_categories, seed_products
 
 # Creates tables if they don't exist yet. Fine for this project's current size;
 # swap for Alembic migrations later if the schema grows.
@@ -17,6 +17,7 @@ run_column_migrations()
 run_data_backfills()
 
 with SessionLocal() as _db:
+    seed_categories(_db)
     seed_products(_db)
 
 app = FastAPI(title="Health Management API")
@@ -39,6 +40,7 @@ app.include_router(auth.router, prefix="/api")
 app.include_router(payments.router, prefix="/api")
 app.include_router(reports.router, prefix="/api")
 app.include_router(products.router, prefix="/api")
+app.include_router(categories.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
 app.include_router(contact.router, prefix="/api")
 

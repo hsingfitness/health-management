@@ -1,0 +1,589 @@
+Phase 3：Web 后台（FastAPI Admin Backend）。
+
+目标：
+
+把前面的：
+
+Phase 1 PostgreSQL
+客户管理
+图片管理
+诊断记录
+AI每日建议
+消息发送
+
+通过 Web 后台管理。
+
+最终效果：
+
+浏览器
+   |
+   ▼
+FastAPI Web Backend
+   |
+   ├── 用户管理
+   |
+   ├── 图片管理
+   |
+   ├── AI诊断查看
+   |
+   ├── 每日建议查看
+   |
+   └── 消息发送记录
+          |
+          ▼
+      PostgreSQL
+Phase 3 项目结构
+
+增加：
+
+HealthAI/
+
+app/
+
+├── api/
+│
+│   ├── customer_api.py
+│   ├── image_api.py
+│   ├── assessment_api.py
+│   └── dashboard_api.py
+│
+├── web/
+│
+│   ├── templates/
+│   │
+│   │   ├── index.html
+│   │   ├── customers.html
+│   │   ├── customer_detail.html
+│   │   └── assessment.html
+│   │
+│   └── static/
+│
+├── auth/
+│
+│   ├── login.py
+│   └── security.py
+│
+└── main.py
+1. 安装依赖
+pip install fastapi
+pip install uvicorn
+pip install jinja2
+pip install python-multipart
+pip install passlib[bcrypt]
+pip install python-jose
+2. FastAPI 主程序
+main.py
+from fastapi import FastAPI
+
+from fastapi.staticfiles import StaticFiles
+
+from fastapi.templating import Jinja2Templates
+
+
+from api.customer_api import router as customer_router
+
+from api.dashboard_api import router as dashboard_router
+
+
+
+app = FastAPI(
+
+    title="Health AI Admin"
+
+)
+
+
+
+# 静态文件
+
+app.mount(
+
+    "/static",
+
+    StaticFiles(directory="web/static"),
+
+    name="static"
+
+)
+
+
+
+templates = Jinja2Templates(
+
+    directory="web/templates"
+
+)
+
+
+
+# API
+
+app.include_router(
+
+    customer_router
+
+)
+
+
+app.include_router(
+
+    dashboard_router
+
+)
+
+运行：
+
+uvicorn app.main:app --reload
+
+打开：
+
+http://127.0.0.1:8000
+3. Dashboard 首页
+api/dashboard_api.py
+from fastapi import APIRouter, Request
+
+from fastapi.responses import HTMLResponse
+
+from fastapi.templating import Jinja2Templates
+
+
+router = APIRouter()
+
+
+templates = Jinja2Templates(
+
+    directory="web/templates"
+
+)
+
+
+
+@router.get(
+
+    "/",
+
+    response_class=HTMLResponse
+
+)
+
+def dashboard(
+
+    request:Request
+
+):
+
+
+    data={
+
+        "customers":120,
+
+        "today_ai_reports":85,
+
+        "messages_sent":240,
+
+        "images":560
+
+    }
+
+
+    return templates.TemplateResponse(
+
+        "index.html",
+
+        {
+
+        "request":request,
+
+        "data":data
+
+        }
+
+    )
+4. 首页页面
+web/templates/index.html
+<html>
+
+<head>
+
+<title>
+Health AI Dashboard
+</title>
+
+</head>
+
+
+<body>
+
+
+<h1>
+Health AI 管理后台
+</h1>
+
+
+<h3>
+客户数量:
+{{data.customers}}
+</h3>
+
+
+<h3>
+今日AI报告:
+{{data.today_ai_reports}}
+</h3>
+
+
+<h3>
+发送消息:
+{{data.messages_sent}}
+</h3>
+
+
+<h3>
+图片数量:
+{{data.images}}
+</h3>
+
+
+</body>
+
+
+</html>
+
+显示：
+
+Health AI 管理后台
+
+
+客户数量:
+120
+
+
+今日AI报告:
+85
+
+
+发送消息:
+240
+
+
+图片数量:
+560
+5. 客户管理页面
+api/customer_api.py
+from fastapi import APIRouter, Request
+
+from fastapi.responses import HTMLResponse
+
+from database.connection import SessionLocal
+
+from database.models import Customer
+
+
+from fastapi.templating import Jinja2Templates
+
+
+
+router=APIRouter()
+
+
+
+templates=Jinja2Templates(
+
+directory="web/templates"
+
+)
+
+
+
+@router.get(
+
+"/customers",
+
+response_class=HTMLResponse
+
+)
+
+def customers(
+
+request:Request
+
+):
+
+
+    db=SessionLocal()
+
+
+    customers=db.query(
+
+        Customer
+
+    ).all()
+
+
+    return templates.TemplateResponse(
+
+        "customers.html",
+
+        {
+
+        "request":request,
+
+        "customers":customers
+
+        }
+
+    )
+6. 客户列表页面
+customers.html
+<html>
+
+<body>
+
+
+<h1>
+客户列表
+</h1>
+
+
+<table border="1">
+
+
+<tr>
+
+<th>
+姓名
+</th>
+
+
+<th>
+Email
+</th>
+
+
+<th>
+电话
+</th>
+
+
+</tr>
+
+
+
+{% for c in customers %}
+
+
+<tr>
+
+<td>
+{{c.name}}
+</td>
+
+
+<td>
+{{c.email}}
+</td>
+
+
+<td>
+{{c.phone}}
+</td>
+
+
+</tr>
+
+
+{% endfor %}
+
+
+</table>
+
+
+</body>
+
+</html>
+
+效果：
+
+姓名	Email	电话
+John	john@test.com	040000000
+7. 图片查看页面
+
+增加：
+
+@router.get("/customer/{id}/images")
+def images(id:str):
+
+    return {
+
+        "customer":id,
+
+        "images":[
+
+        "front.jpg",
+
+        "side.jpg"
+
+        ]
+
+    }
+
+以后连接：
+
+Image Table
+      |
+      ▼
+网页显示
+      |
+      ▼
+AI Vision
+8. AI报告页面
+assessment_api.py
+@router.get("/assessment/{customer_id}")
+
+def assessment(customer_id:str):
+
+
+    reports = repo.get_assessment(
+
+        customer_id
+
+    )
+
+
+    return reports
+
+显示：
+
+Customer:
+
+John
+
+
+2026-07-29
+
+Risk:
+Low
+
+
+AI:
+
+恢复良好
+
+建议：
+
+继续拉伸15分钟
+9. 后台登录系统
+
+管理员：
+
+admin
+
+password
+
+数据库：
+
+增加：
+
+users
+
+id
+
+username
+
+password_hash
+
+role
+
+登录流程：
+
+Login
+
+↓
+
+JWT Token
+
+↓
+
+Access Dashboard
+10. 未来升级
+
+Phase 3 后可以继续增加：
+
+前端升级
+
+现在：
+
+FastAPI + Jinja2
+
+以后：
+
+FastAPI
+
++
+
+React/Vue
+
++
+
+Mobile App
+Dashboard图表
+
+增加：
+
+疼痛趋势
+用户恢复曲线
+AI风险分布
+每日发送统计
+
+例如：
+
+Pain Score
+
+8 |
+6 |       *
+4 |    *
+2 | *
+0 |____________
+  Mon Tue Wed
+Phase 3 完成后系统：
+用户
+
+↓
+
+Web后台
+
+↓
+
+FastAPI
+
+↓
+
+SQLAlchemy ORM
+
+↓
+
+PostgreSQL
+
+
+管理：
+
+✅ 客户
+
+✅ 图片
+
+✅ 诊断记录
+
+✅ AI报告
+
+✅ 消息发送
+
+✅ 数据统计
+
+
+下一步可以做：
+
+Phase 3.5：用户登录系统（JWT + 权限管理）
+
+或者：
+
+Phase 4：Docker + 云端部署（本地 → AWS/Azure）。

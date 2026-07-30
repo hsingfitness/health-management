@@ -1,0 +1,545 @@
+Phase 4：云端部署（Local → Cloud Deployment）。
+
+目标：
+
+把之前本地运行的：
+
+Python + FastAPI + PostgreSQL + AI + 图片存储
+
+部署到云端，让用户可以通过互联网访问。
+
+最终架构：
+
+                 Internet
+
+                    |
+                    ▼
+
+              Nginx / Load Balancer
+
+                    |
+                    ▼
+
+              FastAPI Backend
+                    |
+        ┌───────────┼───────────┐
+        ▼           ▼           ▼
+
+  PostgreSQL    Object       AI API
+   Database     Storage
+
+                  |
+                  ▼
+
+            Email / Telegram
+            SMS / WhatsApp
+Phase 4 云端技术方案
+
+推荐：
+
+模块	技术
+服务器	AWS EC2 / Azure VM / Google Cloud
+系统	Ubuntu 24.04
+后端	FastAPI
+数据库	PostgreSQL Cloud
+图片	S3 / Azure Blob
+反向代理	Nginx
+进程管理	Docker
+HTTPS	Let's Encrypt
+自动部署	GitHub Actions
+1. 云端项目结构
+
+增加：
+
+HealthAI/
+
+├── app/
+│
+├── Dockerfile
+│
+├── docker-compose.yml
+│
+├── nginx/
+│
+│   └── nginx.conf
+│
+├── .env
+│
+└── requirements.txt
+2. Docker化 FastAPI
+Dockerfile
+FROM python:3.12
+
+
+WORKDIR /app
+
+
+COPY requirements.txt .
+
+
+RUN pip install \
+    --no-cache-dir \
+    -r requirements.txt
+
+
+COPY . .
+
+
+CMD [
+
+"uvicorn",
+
+"app.main:app",
+
+"--host",
+
+"0.0.0.0",
+
+"--port",
+
+"8000"
+
+]
+3. PostgreSQL + FastAPI
+docker-compose.yml
+version: "3.9"
+
+
+services:
+
+
+  backend:
+
+    build: .
+
+    container_name: health_ai_api
+
+
+    ports:
+
+      - "8000:8000"
+
+
+    env_file:
+
+      - .env
+
+
+    depends_on:
+
+      - postgres
+
+
+
+  postgres:
+
+
+    image:
+
+      postgres:16
+
+
+    container_name:
+
+      health_ai_db
+
+
+    environment:
+
+
+      POSTGRES_USER:
+
+        health_admin
+
+
+      POSTGRES_PASSWORD:
+
+        password
+
+
+      POSTGRES_DB:
+
+        health_ai
+
+
+
+    volumes:
+
+
+      - postgres_data:/var/lib/postgresql/data
+
+
+
+volumes:
+
+  postgres_data:
+
+启动：
+
+docker compose up -d
+4. 云端环境变量
+.env
+DATABASE_URL=
+postgresql://health_admin:
+password@
+postgres:
+5432/
+health_ai
+
+
+SECRET_KEY=
+your_secret_key
+
+
+OPENAI_API_KEY=
+xxxx
+
+
+TELEGRAM_TOKEN=
+xxxx
+
+
+TWILIO_ACCOUNT=
+xxxx
+
+代码不用保存密码。
+
+5. 图片存储升级
+
+本地：
+
+storage/images/
+
+云端：
+
+AWS S3
+
+bucket:
+
+health-ai-images
+
+    |
+    |
+    ├── customer001
+    |
+    ├── customer002
+
+安装：
+
+pip install boto3
+cloud_storage.py
+import boto3
+
+
+s3=boto3.client(
+    "s3"
+)
+
+
+
+def upload_image(
+
+    file,
+
+    filename
+
+):
+
+
+    s3.upload_fileobj(
+
+        file,
+
+        "health-ai-images",
+
+        filename
+
+    )
+
+
+    return (
+
+    f"s3://health-ai-images/{filename}"
+
+    )
+
+以后：
+
+本地保存路径
+
+↓
+
+S3 URL
+
+数据库不用改变：
+
+Image.file_path
+
+仍然保存地址。
+
+6. Nginx反向代理
+
+用户访问：
+
+https://health-ai.com
+
+实际：
+
+Nginx
+ |
+ |
+ FastAPI:8000
+nginx.conf
+server {
+
+
+listen 80;
+
+
+server_name health-ai.com;
+
+
+
+location / {
+
+
+proxy_pass
+
+http://backend:8000;
+
+
+
+proxy_set_header
+
+Host $host;
+
+
+}
+
+
+}
+7. HTTPS
+
+安装：
+
+sudo apt install certbot
+
+申请：
+
+certbot --nginx
+
+得到：
+
+https://health-ai.com
+8. 数据库迁移
+
+不要使用：
+
+Base.metadata.create_all()
+
+生产环境使用：
+
+Alembic
+
+安装：
+
+pip install alembic
+
+初始化：
+
+alembic init migrations
+
+以后修改：
+
+例如：
+
+增加：
+
+AI_score = Column(Integer)
+
+执行：
+
+alembic revision --autogenerate \
+-m "add AI score"
+
+
+alembic upgrade head
+
+数据库自动升级。
+
+9. 自动启动
+
+服务器重启：
+
+docker compose restart
+
+或者：
+
+docker compose up -d
+
+自动运行：
+
+FastAPI
+PostgreSQL
+Scheduler
+AI Agent
+10. 自动每日AI任务（云端）
+
+本地：
+
+电脑开机
+   |
+Scheduler
+
+云端：
+
+推荐：
+
+Celery + Redis
+
+结构：
+
+              FastAPI
+
+                 |
+
+              Redis
+
+                 |
+
+              Celery Worker
+
+                 |
+
+           Daily AI Job
+
+每天：
+
+08:00
+
+↓
+
+读取用户
+
+↓
+
+AI诊断
+
+↓
+
+生成建议
+
+↓
+
+发送消息
+11. 云端安全
+
+必须增加：
+
+数据库
+
+不要：
+
+PostgreSQL开放公网
+
+应该：
+
+FastAPI
+ |
+Private Network
+ |
+PostgreSQL
+图片
+
+不要：
+
+public bucket
+
+应该：
+
+Private bucket
+
+↓
+
+Temporary URL
+用户数据
+
+增加：
+
+数据加密
+访问日志
+用户权限
+定期备份
+12. 云端费用估计（小规模）
+
+测试阶段：
+
+项目	方案
+服务器	$5–20/月
+PostgreSQL	$0–20/月
+图片存储	几美元/月
+域名	约$10–20/年
+AI API	按使用量
+
+几十到几百用户：
+
+通常：
+
+$30–100/月
+Phase 4 完成后的系统
+用户
+
+↓
+
+Web / Mobile
+
+↓
+
+HTTPS
+
+↓
+
+Nginx
+
+↓
+
+FastAPI
+
+↓
+
+SQLAlchemy
+
+↓
+
+PostgreSQL Cloud
+
+↓
+
+AI Engine
+
+↓
+
+S3 图片
+
+↓
+
+Email
+Telegram
+SMS
+WhatsApp
+
+到这里，你的系统已经从：
+
+本地 Python 程序
+
+升级为：
+
+云端 AI 健康管理 SaaS 平台架构
+
+下一步可以做：
+
+Phase 5：React/Vue 前端 + 移动端 App 接口
+
+或者：
+
+Phase 5：AI Vision 图片诊断模块（上传图片 → 自动分析 → 报告）。

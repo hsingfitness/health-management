@@ -1,0 +1,558 @@
+Phase 3 - Web后台图片上传模块（Image Upload）。
+
+目标：
+
+管理员登录后台后，可以：
+
+登录
+  ↓
+选择客户
+  ↓
+上传图片
+  ↓
+保存图片文件
+  ↓
+保存数据库记录
+  ↓
+AI读取图片分析
+
+完整流程：
+
+Browser
+   |
+   | multipart/form-data
+   |
+   ▼
+FastAPI
+   |
+   ├── 保存文件
+   |
+   └── PostgreSQL保存图片信息
+              |
+              ▼
+          Image Table
+1. 项目结构
+
+增加：
+
+HealthAI/
+
+app/
+
+├── image/
+│
+│   ├── models.py
+│   ├── schema.py
+│   ├── storage.py
+│   ├── service.py
+│   └── api.py
+│
+├── web/
+│
+│   └── templates/
+│
+│       └── upload_image.html
+│
+├── storage/
+│
+│   └── images/
+
+└── main.py
+2. 图片数据库模型
+image/models.py
+from sqlalchemy import (
+    Column,
+    String,
+    Text,
+    DateTime,
+    ForeignKey
+)
+
+from datetime import datetime
+import uuid
+
+from database.base import Base
+
+
+class Image(Base):
+
+    __tablename__ = "images"
+
+
+    id = Column(
+        String,
+        primary_key=True,
+        default=lambda:str(uuid.uuid4())
+    )
+
+
+    customer_id = Column(
+        String,
+        ForeignKey(
+            "customers.id"
+        )
+    )
+
+
+    filename = Column(
+        String(200)
+    )
+
+
+    file_path = Column(
+        Text
+    )
+
+
+    image_type = Column(
+        String(50)
+    )
+
+
+    description = Column(
+        Text
+    )
+
+
+    uploaded_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
+3. 图片存储
+image/storage.py
+
+负责保存图片文件。
+
+import os
+import uuid
+
+
+UPLOAD_FOLDER = "storage/images"
+
+
+
+def save_image(file):
+
+
+    os.makedirs(
+
+        UPLOAD_FOLDER,
+
+        exist_ok=True
+
+    )
+
+
+    extension = (
+
+        file.filename
+
+        .split(".")
+
+        [-1]
+
+    )
+
+
+    filename = (
+
+        str(uuid.uuid4())
+
+        +
+
+        "."
+
+        +
+
+        extension
+
+    )
+
+
+    path = os.path.join(
+
+        UPLOAD_FOLDER,
+
+        filename
+
+    )
+
+
+    with open(
+
+        path,
+
+        "wb"
+
+    ) as buffer:
+
+
+        buffer.write(
+
+            file.file.read()
+
+        )
+
+
+    return path
+
+上传：
+
+shoulder.jpg
+
+保存：
+
+storage/images/
+
+8a7d2xxx.jpg
+4. 图片上传页面
+web/templates/upload_image.html
+<html>
+
+<body>
+
+
+<h2>
+上传客户图片
+</h2>
+
+
+<form
+
+action="/images/upload"
+
+method="post"
+
+enctype="multipart/form-data">
+
+
+客户ID:
+
+<input
+
+name="customer_id">
+
+
+<br>
+
+
+图片类型:
+
+<input
+
+name="image_type">
+
+
+<br>
+
+
+描述:
+
+<input
+
+name="description">
+
+
+<br>
+
+
+图片:
+
+<input
+
+type="file"
+
+name="file">
+
+
+<br>
+
+
+<button>
+
+上传
+
+</button>
+
+
+</form>
+
+
+</body>
+
+</html>
+5. FastAPI 上传接口
+image/api.py
+from fastapi import (
+    APIRouter,
+    UploadFile,
+    File,
+    Form,
+    Depends
+)
+
+from database.connection import SessionLocal
+
+from image.storage import save_image
+
+from image.service import create_image
+
+
+router = APIRouter(
+    prefix="/images"
+)
+
+
+
+def get_db():
+
+    db = SessionLocal()
+
+    try:
+
+        yield db
+
+    finally:
+
+        db.close()
+
+
+
+@router.post("/upload")
+def upload_image(
+
+    customer_id:str=Form(...),
+
+    image_type:str=Form(None),
+
+    description:str=Form(None),
+
+    file:UploadFile=File(...),
+
+    db=Depends(get_db)
+
+):
+
+
+    path = save_image(file)
+
+
+    image = create_image(
+
+        db,
+
+        customer_id,
+
+        file.filename,
+
+        path,
+
+        image_type,
+
+        description
+
+    )
+
+
+    return {
+
+        "message":
+
+        "upload success",
+
+        "image_id":
+
+        image.id
+
+    }
+6. 数据库保存服务
+image/service.py
+from image.models import Image
+
+
+
+def create_image(
+
+    db,
+
+    customer_id,
+
+    filename,
+
+    path,
+
+    image_type,
+
+    description
+
+):
+
+
+    image = Image(
+
+        customer_id=customer_id,
+
+        filename=filename,
+
+        file_path=path,
+
+        image_type=image_type,
+
+        description=description
+
+    )
+
+
+    db.add(image)
+
+    db.commit()
+
+    db.refresh(image)
+
+
+    return image
+7. 注册路由
+main.py
+
+加入：
+
+from image.api import router as image_router
+
+
+app.include_router(
+
+    image_router
+
+)
+8. 启动
+uvicorn app.main:app --reload
+
+打开：
+
+http://127.0.0.1:8000/docs
+
+看到：
+
+POST /images/upload
+9. 上传测试
+
+输入：
+
+customer_id:
+
+a82d3xxx
+
+
+image_type:
+
+shoulder
+
+
+description:
+
+front shoulder
+
+
+file:
+
+shoulder.jpg
+
+返回：
+
+{
+ "message":"upload success",
+
+ "image_id":
+ "91abxxxx"
+}
+10. 数据库结果
+
+PostgreSQL：
+
+images
+
+id
+--------------------------------
+91abxxxx
+
+
+customer_id
+--------------------------------
+a82d3xxx
+
+
+filename
+--------------------------------
+shoulder.jpg
+
+
+file_path
+--------------------------------
+storage/images/91abxxxx.jpg
+
+
+image_type
+--------------------------------
+shoulder
+11. AI连接接口
+
+以后 Phase 2 AI：
+
+读取：
+
+images = db.query(
+    Image
+).filter(
+
+    Image.customer_id == customer_id
+
+).all()
+
+得到：
+
+[
+ {
+  "type":"shoulder",
+  "path":
+  "storage/images/91abxxxx.jpg"
+ }
+]
+
+发送给：
+
+GPT Vision
+        ↓
+图片分析
+        ↓
+AI Daily Assessment
+12. 云端迁移
+
+目前：
+
+storage/images/
+
+以后：
+
+AWS S3
+Azure Blob
+Google Cloud Storage
+
+只替换：
+
+save_image()
+
+数据库结构不变。
+
+Phase 3 图片上传完成：
+
+✅ Web上传界面
+✅ FastAPI文件上传
+✅ 图片保存
+✅ PostgreSQL记录
+✅ 客户关联
+✅ AI读取接口
+✅ 支持云端迁移
+
+下一步可以做：
+
+Phase 3 - 图片浏览与管理（缩略图、删除、下载、AI分析按钮）
