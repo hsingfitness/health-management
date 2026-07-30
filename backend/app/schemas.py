@@ -84,9 +84,26 @@ class ReportOut(BaseModel):
 # ---------- Marketplace products ----------
 
 class ProductOut(BaseModel):
+    """Public shape: name/description already resolved to one language
+    (with English fallback) by the endpoint, not read directly off the
+    ORM object."""
     id: str
     name: str
     description: str
+    price: float
+    category: str
+    icon: str
+    badges: list[str]
+    stripe_payment_link: str | None = None
+    is_active: bool
+    sort_order: int
+
+
+class AdminProductOut(BaseModel):
+    """Admin shape: every language's text, for editing in the dashboard."""
+    id: str
+    name_i18n: dict[str, str]
+    description_i18n: dict[str, str]
     price: float
     category: str
     icon: str
@@ -101,8 +118,8 @@ class ProductOut(BaseModel):
 
 class ProductCreate(BaseModel):
     id: str = Field(min_length=1, max_length=80, pattern=r"^[a-z0-9]+(-[a-z0-9]+)*$")
-    name: str = Field(min_length=1, max_length=200)
-    description: str = Field(default="", max_length=500)
+    name_i18n: dict[str, str] = Field(min_length=1)  # must have at least one language, ideally "en"
+    description_i18n: dict[str, str] = Field(default_factory=dict)
     price: float = Field(gt=0)
     category: str = Field(default="supplements", max_length=40)
     icon: str = Field(default="💊", max_length=10)
@@ -113,8 +130,8 @@ class ProductCreate(BaseModel):
 
 
 class ProductUpdate(BaseModel):
-    name: str | None = Field(default=None, min_length=1, max_length=200)
-    description: str | None = Field(default=None, max_length=500)
+    name_i18n: dict[str, str] | None = None
+    description_i18n: dict[str, str] | None = None
     price: float | None = Field(default=None, gt=0)
     category: str | None = Field(default=None, max_length=40)
     icon: str | None = Field(default=None, max_length=10)

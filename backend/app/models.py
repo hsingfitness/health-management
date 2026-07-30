@@ -45,8 +45,11 @@ class Product(Base):
     __tablename__ = "products"
 
     id = Column(String(80), primary_key=True)  # human-readable slug, e.g. "omega-3-fish-oil"
-    name = Column(String(200), nullable=False)
-    description = Column(String(500), nullable=False, default="")
+    name = Column(String(200), nullable=False)  # legacy English-only column, kept for backward compat
+    description = Column(String(500), nullable=False, default="")  # legacy English-only column
+    # {"en": "...", "zh": "...", "ja": "...", "ko": "..."} -- missing languages fall back to "en"
+    name_i18n = Column(JSON, nullable=False, default=dict)
+    description_i18n = Column(JSON, nullable=False, default=dict)
     price = Column(Numeric(10, 2), nullable=False)
     category = Column(String(40), nullable=False, default="supplements")
     icon = Column(String(10), nullable=False, default="💊")

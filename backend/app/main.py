@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .database import Base, SessionLocal, engine, run_column_migrations
+from .database import Base, SessionLocal, engine, run_column_migrations, run_data_backfills
 from .routers import admin, auth, contact, payments, products, reports
 from .seed import seed_products
 
@@ -14,6 +14,7 @@ Base.metadata.create_all(bind=engine)
 # existed in a deployed database (create_all() above only creates whole
 # missing tables, never alters existing ones).
 run_column_migrations()
+run_data_backfills()
 
 with SessionLocal() as _db:
     seed_products(_db)

@@ -1,3 +1,5 @@
+import json
+
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 
@@ -35,6 +37,10 @@ COLUMN_MIGRATIONS = {
     "orders": [
         ("delivery_status", "VARCHAR(20) NOT NULL DEFAULT 'pending'"),
     ],
+    "products": [
+        ("name_i18n", "JSON NOT NULL DEFAULT '{}'"),
+        ("description_i18n", "JSON NOT NULL DEFAULT '{}'"),
+    ],
 }
 
 
@@ -53,3 +59,40 @@ def run_column_migrations() -> None:
                 if name in existing_columns:
                     continue
                 conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {ddl_type}"))
+
+
+def run_data_backfills() -> None:
+    """One-time data fixes that go beyond adding a column with a static
+    default -- e.g. copying an existing plain-English value into the new
+    per-language JSON field so nothing goes blank after the migration
+    above runs. Safe to call every startup: only touches rows that still
+    need it."""
+    inspector = inspect(engine)
+    if "products" not in inspector.get_table_names():
+        return
+
+    with engine.begin() as conn:
+        rows = conn.execute(text("SELECT id, name, description, name_i18n, description_i18n FROM products")).fetchall()
+
+        for row in rows:
+            name_i18n = row.name_i18n or {}
+            description_i18n = row.description_i18n or {}
+
+            if isinstance(name_i18n, str):
+                name_i18n = json.loads(name_i18n) if name_i18n else {}
+            if isinstance(description_i18n, str):
+                description_i18n = json.loads(description_i18n) if description_i18n else {}
+
+            changed = False
+            if not name_i18n and row.name:
+                name_i18n = {"en": row.name}
+                changed = True
+            if not description_i18n and row.description:
+                description_i18n = {"en": row.description}
+                changed = True
+
+            if changed:
+                conn.execute(
+                    text("UPDATE products SET name_i18n = :n, description_i18n = :d WHERE id = :id"),
+                    {"n": json.dumps(name_i18n), "d": json.dumps(description_i18n), "id": row.id},
+                )
