@@ -186,30 +186,43 @@
     // whenever it's present. Falls back to whatever auth.js rendered
     // (English) when there's no translation, so this stays safe even
     // if auth.js changes its markup slightly.
+    var AUTH_SLOT_EN_DEFAULTS = {
+        "nav.login": "Log In",
+        "nav.myAssessments": "My Assessments",
+        "nav.myOrders": "My Orders",
+        "nav.admin": "Admin Dashboard",
+        "nav.logout": "Log Out"
+    };
+
     function translateAuthSlot(dict, code) {
         var slot = document.getElementById("nav-auth-slot");
-        if (!slot || code === "en") return;
+        if (!slot) return;
+
+        // When switching to English, restore the known English defaults
+        // directly rather than skipping — the slot's text may currently
+        // be sitting in whatever language was last applied.
+        var lookup = code === "en" ? AUTH_SLOT_EN_DEFAULTS : dict;
 
         var loginBtn = slot.querySelector(".btn-login");
-        if (loginBtn && dict["nav.login"] && loginBtn.textContent !== dict["nav.login"]) {
-            loginBtn.textContent = dict["nav.login"];
+        if (loginBtn && lookup["nav.login"] && loginBtn.textContent !== lookup["nav.login"]) {
+            loginBtn.textContent = lookup["nav.login"];
         }
 
         var links = slot.querySelectorAll(".account-menu__dropdown a");
-        if (links[0] && dict["nav.myAssessments"] && links[0].textContent !== dict["nav.myAssessments"]) {
-            links[0].textContent = dict["nav.myAssessments"];
+        if (links[0] && lookup["nav.myAssessments"] && links[0].textContent !== lookup["nav.myAssessments"]) {
+            links[0].textContent = lookup["nav.myAssessments"];
         }
-        if (links[1] && dict["nav.myOrders"] && links[1].textContent !== dict["nav.myOrders"]) {
-            links[1].textContent = dict["nav.myOrders"];
+        if (links[1] && lookup["nav.myOrders"] && links[1].textContent !== lookup["nav.myOrders"]) {
+            links[1].textContent = lookup["nav.myOrders"];
         }
         var adminLink = slot.querySelector(".account-menu__dropdown a[href$='admin.html']");
-        if (adminLink && dict["nav.admin"] && adminLink.textContent !== dict["nav.admin"]) {
-            adminLink.textContent = dict["nav.admin"];
+        if (adminLink && lookup["nav.admin"] && adminLink.textContent !== lookup["nav.admin"]) {
+            adminLink.textContent = lookup["nav.admin"];
         }
 
         var logoutBtn = slot.querySelector("#logout-btn");
-        if (logoutBtn && dict["nav.logout"] && logoutBtn.textContent !== dict["nav.logout"]) {
-            logoutBtn.textContent = dict["nav.logout"];
+        if (logoutBtn && lookup["nav.logout"] && logoutBtn.textContent !== lookup["nav.logout"]) {
+            logoutBtn.textContent = lookup["nav.logout"];
         }
     }
 
