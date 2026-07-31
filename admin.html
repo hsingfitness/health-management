@@ -107,11 +107,46 @@
                             </div>
                             <div>
                                 <label for="product-icon">Icon (emoji)</label>
-                                <input type="text" id="product-icon" placeholder="💊" maxlength="4">
+                                <input type="text" id="product-icon" placeholder="💊" maxlength="4" list="icon-suggestions">
+                                <datalist id="icon-suggestions">
+                                    <option value="💊">Pill / Supplement</option>
+                                    <option value="🍃">Herb / Leaf</option>
+                                    <option value="〽">Device / Monitor</option>
+                                    <option value="🍽">Meal / Food</option>
+                                    <option value="♡">Wellness / Heart</option>
+                                    <option value="📖">Ebook / Guide</option>
+                                    <option value="🧴">Skincare / Bottle</option>
+                                    <option value="🏋️">Fitness / Gear</option>
+                                    <option value="🧘">Mindfulness / Yoga</option>
+                                    <option value="💧">Hydration / Drop</option>
+                                </datalist>
                             </div>
                             <div class="admin-form__span2">
-                                <label for="product-badges">Badges (comma-separated)</label>
-                                <input type="text" id="product-badges" placeholder="Best Seller, Optional">
+                                <label for="product-badges">Badges (hold Ctrl/Cmd to select more than one)</label>
+                                <select id="product-badges" multiple size="4">
+                                    <option value="Best Seller">Best Seller</option>
+                                    <option value="Popular">Popular</option>
+                                    <option value="New">New</option>
+                                    <option value="Top Rated">Top Rated</option>
+                                    <option value="Chef's Pick">Chef's Pick</option>
+                                    <option value="Optional">Optional</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="product-content-type">Content Type</label>
+                                <select id="product-content-type">
+                                    <option value="physical">Physical / regular product</option>
+                                    <option value="digital_text">Digital text — locked until purchased</option>
+                                </select>
+                                <p class="admin-field-hint">
+                                    Choose "Digital text" for things like meal plan guides or ebooks. Buyers only
+                                    see the content below after they've paid for this product.
+                                </p>
+                            </div>
+                            <div class="admin-form__span2" id="product-digital-content-wrap" hidden>
+                                <label for="product-digital-content">Locked Content (shown only to buyers after payment)</label>
+                                <textarea id="product-digital-content" rows="6" maxlength="20000" placeholder="Paste the full guide / plan / text here…"></textarea>
                             </div>
 
                             <div class="admin-form__span2">
@@ -216,7 +251,7 @@
                             </div>
                             <div>
                                 <label for="category-icon">Icon (emoji)</label>
-                                <input type="text" id="category-icon" placeholder="🏷" maxlength="4">
+                                <input type="text" id="category-icon" placeholder="🏷" maxlength="4" list="icon-suggestions">
                             </div>
                             <div>
                                 <label for="category-sort-order">Sort Order</label>

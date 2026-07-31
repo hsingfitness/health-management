@@ -86,7 +86,9 @@ class ReportOut(BaseModel):
 class ProductOut(BaseModel):
     """Public shape: name/description already resolved to one language
     (with English fallback) by the endpoint, not read directly off the
-    ORM object."""
+    ORM object. Note: digital_content is deliberately NOT included here —
+    it's only ever returned by the unlock endpoint, and only to a buyer
+    who has a paid order for this product."""
     id: str
     name: str
     description: str
@@ -97,10 +99,12 @@ class ProductOut(BaseModel):
     stripe_payment_link: str | None = None
     is_active: bool
     sort_order: int
+    content_type: str = "physical"
 
 
 class AdminProductOut(BaseModel):
-    """Admin shape: every language's text, for editing in the dashboard."""
+    """Admin shape: every language's text, for editing in the dashboard.
+    Includes the digital_content text itself since admins need to edit it."""
     id: str
     name_i18n: dict[str, str]
     description_i18n: dict[str, str]
@@ -111,6 +115,8 @@ class AdminProductOut(BaseModel):
     stripe_payment_link: str | None = None
     is_active: bool
     sort_order: int
+    content_type: str = "physical"
+    digital_content: str | None = None
 
     class Config:
         from_attributes = True
@@ -127,6 +133,8 @@ class ProductCreate(BaseModel):
     stripe_payment_link: str | None = None
     is_active: bool = True
     sort_order: int = 0
+    content_type: str = Field(default="physical", pattern=r"^(physical|digital_text)$")
+    digital_content: str | None = Field(default=None, max_length=20000)
 
 
 class ProductUpdate(BaseModel):
@@ -139,6 +147,8 @@ class ProductUpdate(BaseModel):
     stripe_payment_link: str | None = None
     is_active: bool | None = None
     sort_order: int | None = None
+    content_type: str | None = Field(default=None, pattern=r"^(physical|digital_text)$")
+    digital_content: str | None = Field(default=None, max_length=20000)
 
 
 # ---------- Categories ----------

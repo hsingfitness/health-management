@@ -64,10 +64,31 @@
         return div.innerHTML;
     }
 
+    const VIEW_CONTENT_TEXT = { zh: "查看内容", ja: "コンテンツを見る", ko: "콘텐츠 보기" };
+    const LOCKED_TEXT = { zh: "购买后解锁", ja: "購入後に解除", ko: "구매 후 잠금 해제" };
+
+    function viewContentText() {
+        return VIEW_CONTENT_TEXT[currentLang()] || "View Content";
+    }
+
+    function lockedText() {
+        return LOCKED_TEXT[currentLang()] || "Unlocks after purchase";
+    }
+
     function renderCard(p) {
         const badges = (p.badges || [])
             .map((b) => `<span class="badge ${badgeClass(b)}">${escapeHtml(badgeText(b))}</span>`)
             .join("");
+
+        const isDigital = p.content_type === "digital_text";
+        const lockedRow = isDigital
+            ? `<div class="product-card__locked">
+                    <span class="product-card__locked-label">🔒 ${escapeHtml(lockedText())}</span>
+                    <button class="product-card__unlock-btn" type="button" data-view-content data-id="${escapeHtml(p.id)}" data-name="${escapeHtml(p.name)}">
+                        ${escapeHtml(viewContentText())}
+                    </button>
+                </div>`
+            : "";
 
         return `
             <article class="product-card" data-category="${escapeHtml(p.category)}">
@@ -77,6 +98,7 @@
                 </div>
                 <h3>${escapeHtml(p.name)}</h3>
                 <p>${escapeHtml(p.description)}</p>
+                ${lockedRow}
                 <div class="product-card__footer">
                     <strong>$${Number(p.price).toFixed(2)}</strong>
                     <button class="cart-button" type="button" data-add-to-cart
@@ -88,6 +110,81 @@
                     </button>
                 </div>
             </article>`;
+    }
+
+    /* ---- Locked digital content modal ---- */
+
+    function ensureContentModal() {
+        let modal = document.getElementById("hm-content-modal");
+        if (modal) return modal;
+
+        modal = document.createElement("div");
+        modal.id = "hm-content-modal";
+        modal.className = "hm-content-modal";
+        modal.hidden = true;
+        modal.innerHTML = `
+            <div class="hm-content-modal__backdrop" data-close-content-modal></div>
+            <div class="hm-content-modal__box" role="dialog" aria-modal="true">
+                <button type="button" class="hm-content-modal__close" data-close-content-modal aria-label="Close">&times;</button>
+                <h3 id="hm-content-modal-title"></h3>
+                <div id="hm-content-modal-body" class="hm-content-modal__body"></div>
+            </div>`;
+        document.body.appendChild(modal);
+
+        modal.querySelectorAll("[data-close-content-modal]").forEach((el) => {
+            el.addEventListener("click", () => { modal.hidden = true; });
+        });
+
+        return modal;
+    }
+
+    function showContentModal(title, bodyHtml) {
+        const modal = ensureContentModal();
+        modal.querySelector("#hm-content-modal-title").textContent = title;
+        modal.querySelector("#hm-content-modal-body").innerHTML = bodyHtml;
+        modal.hidden = false;
+    }
+
+    async function handleViewContent(id, name) {
+        if (typeof isLoggedIn !== "function" || !isLoggedIn()) {
+            const redirectTarget = "marketplace.html";
+            window.location.href = "login.html?redirect=" + encodeURIComponent(redirectTarget);
+            return;
+        }
+
+        try {
+            const response = await fetch(API_BASE + "/products/" + encodeURIComponent(id) + "/content", {
+                headers: { Authorization: "Bearer " + getToken() }
+            });
+
+            if (response.status === 403) {
+                showContentModal(
+                    name,
+                    `<p class="hm-content-modal__locked">🔒 Purchase this product to unlock its content. Add it to your cart and complete checkout, then come back and click "${escapeHtml(viewContentText())}" again.</p>`
+                );
+                return;
+            }
+
+            if (!response.ok) {
+                showContentModal(name, `<p class="hm-content-modal__locked">Something went wrong loading this content. Please try again later.</p>`);
+                return;
+            }
+
+            const data = await response.json();
+            showContentModal(name, `<div class="hm-content-modal__text">${escapeHtml(data.content || "")}</div>`);
+        } catch (err) {
+            showContentModal(name, `<p class="hm-content-modal__locked">Can't reach the server right now. Please try again later.</p>`);
+        }
+    }
+
+    function wireViewContentButtons() {
+        document.querySelectorAll("[data-view-content]").forEach((btn) => {
+            if (btn._contentBound) return;
+            btn._contentBound = true;
+            btn.addEventListener("click", () => {
+                handleViewContent(btn.dataset.id, btn.dataset.name);
+            });
+        });
     }
 
     function updateItemCount(n) {
@@ -205,6 +302,7 @@
 
         grid.innerHTML = products.map(renderCard).join("");
         wireCategoryFilters();
+        wireViewContentButtons();
         applyCategoryFilter();
 
         if (window.HMCart && typeof window.HMCart.rebind === "function") {

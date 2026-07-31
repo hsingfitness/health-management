@@ -57,6 +57,11 @@ class Product(Base):
     stripe_payment_link = Column(String(500), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
     sort_order = Column(Integer, nullable=False, default=0)
+    # "physical" (default) or "digital_text". Digital-text products show a
+    # locked preview on the marketplace; the actual `digital_content` text
+    # is only served to a buyer once they have a paid order for this product.
+    content_type = Column(String(20), nullable=False, default="physical")
+    digital_content = Column(String(20000), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

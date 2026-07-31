@@ -40,6 +40,8 @@ COLUMN_MIGRATIONS = {
     "products": [
         ("name_i18n", "JSON NOT NULL DEFAULT '{}'"),
         ("description_i18n", "JSON NOT NULL DEFAULT '{}'"),
+        ("content_type", "VARCHAR(20) NOT NULL DEFAULT 'physical'"),
+        ("digital_content", "VARCHAR(20000)"),
     ],
 }
 

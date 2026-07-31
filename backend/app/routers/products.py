@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..deps import require_permission
-from ..models import Product, User
+from ..deps import get_current_user, require_permission
+from ..models import Order, Product, User
 from ..schemas import AdminProductOut, ProductCreate, ProductOut, ProductUpdate
 
 router = APIRouter(tags=["products"])
@@ -35,6 +35,7 @@ def to_product_out(product: Product, lang: str) -> ProductOut:
         stripe_payment_link=product.stripe_payment_link,
         is_active=product.is_active,
         sort_order=product.sort_order,
+        content_type=product.content_type,
     )
 
 
@@ -55,6 +56,41 @@ def list_products(
         .all()
     )
     return [to_product_out(p, lang) for p in products]
+
+
+@router.get("/products/{product_id}/content")
+def get_product_content(
+    product_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Returns the locked text content for a digital_text product — but
+    only if the current user has a paid order that includes it. This is
+    the only place `digital_content` is ever sent to a non-admin."""
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found.")
+
+    if product.content_type != "digital_text":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This product has no unlockable content.")
+
+    paid_orders = (
+        db.query(Order)
+        .filter(Order.user_id == str(current_user.id), Order.status == "paid")
+        .all()
+    )
+    owns_it = any(
+        any((item or {}).get("id") == product_id for item in (order.items or []))
+        for order in paid_orders
+    )
+
+    if not owns_it:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Purchase this product to unlock its content.",
+        )
+
+    return {"content": product.digital_content or ""}
 
 
 @router.get("/admin/products", response_model=list[AdminProductOut])

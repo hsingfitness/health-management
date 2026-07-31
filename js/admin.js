@@ -273,7 +273,13 @@
 
         document.getElementById("product-form").addEventListener("submit", onProductFormSubmit);
         document.getElementById("product-cancel-edit").addEventListener("click", resetProductForm);
+        document.getElementById("product-content-type").addEventListener("change", updateDigitalContentVisibility);
         initProductLangTabs();
+    }
+
+    function updateDigitalContentVisibility() {
+        const isDigital = document.getElementById("product-content-type").value === "digital_text";
+        document.getElementById("product-digital-content-wrap").hidden = !isDigital;
     }
 
     async function loadProducts() {
@@ -298,7 +304,7 @@
                         <span class="admin-product-desc">${escapeHtml(displayDescription(p))}</span>
                         <span class="admin-product-langs">${languageBadges(p)}</span>
                     </td>
-                    <td>${escapeHtml(p.category)}</td>
+                    <td>${escapeHtml(p.category)}${p.content_type === "digital_text" ? ' <span class="admin-muted" title="Locked digital content">🔒</span>' : ""}</td>
                     <td>${money(p.price)}</td>
                     <td>
                         <span class="admin-status ${p.is_active ? "admin-status--active" : "admin-status--inactive"}">
@@ -347,9 +353,12 @@
         document.getElementById("product-price").value = product.price;
         document.getElementById("product-category").value = product.category;
         document.getElementById("product-icon").value = product.icon;
-        document.getElementById("product-badges").value = (product.badges || []).join(", ");
+        setSelectedBadges(product.badges || []);
         document.getElementById("product-stripe-link").value = product.stripe_payment_link || "";
         document.getElementById("product-active").checked = product.is_active;
+        document.getElementById("product-content-type").value = product.content_type || "physical";
+        document.getElementById("product-digital-content").value = product.digital_content || "";
+        updateDigitalContentVisibility();
 
         LANGUAGES.forEach((l) => {
             const nameInput = document.querySelector(`.product-name-input[data-lang="${l.code}"]`);
@@ -363,6 +372,17 @@
         document.getElementById("product-form").scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
+    function setSelectedBadges(badges) {
+        const select = document.getElementById("product-badges");
+        Array.from(select.options).forEach((opt) => {
+            opt.selected = badges.includes(opt.value);
+        });
+    }
+
+    function getSelectedBadges() {
+        return Array.from(document.getElementById("product-badges").selectedOptions).map((opt) => opt.value);
+    }
+
     function resetProductForm() {
         editingProductId = null;
         const form = document.getElementById("product-form");
@@ -372,6 +392,10 @@
         document.getElementById("product-submit-btn").textContent = "Add Product";
         document.getElementById("product-cancel-edit").hidden = true;
         document.getElementById("product-active").checked = true;
+        setSelectedBadges([]);
+        document.getElementById("product-content-type").value = "physical";
+        document.getElementById("product-digital-content").value = "";
+        updateDigitalContentVisibility();
         document.querySelectorAll(".product-name-input, .product-description-input").forEach((el) => (el.value = ""));
         refreshLangTabDots();
         switchLangTab("en");
@@ -410,11 +434,7 @@
         const form = e.target;
         clearFormError(form);
 
-        const badges = document
-            .getElementById("product-badges")
-            .value.split(",")
-            .map((s) => s.trim())
-            .filter(Boolean);
+        const badges = getSelectedBadges();
 
         const name_i18n = {};
         const description_i18n = {};
@@ -433,6 +453,14 @@
             return;
         }
 
+        const contentType = document.getElementById("product-content-type").value;
+        const digitalContent = document.getElementById("product-digital-content").value.trim();
+
+        if (contentType === "digital_text" && !digitalContent) {
+            showFormError(form, "Add the locked content text, or switch Content Type back to Physical.");
+            return;
+        }
+
         const payload = {
             name_i18n,
             description_i18n,
@@ -441,7 +469,9 @@
             icon: document.getElementById("product-icon").value.trim() || "💊",
             badges,
             stripe_payment_link: document.getElementById("product-stripe-link").value.trim() || null,
-            is_active: document.getElementById("product-active").checked
+            is_active: document.getElementById("product-active").checked,
+            content_type: contentType,
+            digital_content: contentType === "digital_text" ? digitalContent : null
         };
 
         try {
