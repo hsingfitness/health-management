@@ -24,7 +24,7 @@ DEFAULT_PRODUCTS = [
             "ja": "認知機能と関節の健康に役立つ高DHA/EPA配合。",
             "ko": "인지 기능과 관절 건강에 도움이 되는 고함량 DHA/EPA.",
         },
-        price=28.99, category="supplements", icon="💊",
+        price=28.99, category="heart-health", icon="💊",
         badges=["Best Seller", "Optional"], sort_order=1,
     ),
     dict(
@@ -40,7 +40,7 @@ DEFAULT_PRODUCTS = [
             "ja": "骨と免疫をサポートする吸収力強化フォーミュラ。",
             "ko": "뼈와 면역 건강을 위한 흡수력 강화 포뮬러.",
         },
-        price=18.99, category="supplements", icon="💊",
+        price=18.99, category="immune-health", icon="💊",
         badges=["Optional"], sort_order=2,
     ),
     dict(
@@ -56,7 +56,7 @@ DEFAULT_PRODUCTS = [
             "ja": "高度な免疫サポートフォーミュラ。",
             "ko": "고급 면역 시스템 지원 포뮬러.",
         },
-        price=22.99, category="supplements", icon="💊",
+        price=22.99, category="immune-health", icon="💊",
         badges=["Popular", "Optional"], sort_order=3,
     ),
     dict(
@@ -72,7 +72,7 @@ DEFAULT_PRODUCTS = [
             "ja": "消化酵素配合のクリーンな植物性プロテイン。",
             "ko": "소화 효소가 함유된 깨끗한 식물성 단백질.",
         },
-        price=39.99, category="supplements", icon="🌿",
+        price=39.99, category="weight-management", icon="🌿",
         badges=["Optional"], sort_order=4,
     ),
     dict(
@@ -88,7 +88,7 @@ DEFAULT_PRODUCTS = [
             "ja": "筋肉の弛緩、睡眠、神経系の健康をサポート。",
             "ko": "근육 이완, 수면, 신경계 건강을 지원합니다.",
         },
-        price=24.99, category="supplements", icon="🌿",
+        price=24.99, category="sleep", icon="🌿",
         badges=["New", "Optional"], sort_order=5,
     ),
     dict(
@@ -104,7 +104,7 @@ DEFAULT_PRODUCTS = [
             "ja": "コルチゾールとストレス反応を整えるアダプトゲンハーブ。",
             "ko": "코르티솔과 스트레스 반응을 조절하는 적응성 허브.",
         },
-        price=26.99, category="herbs", icon="🌿",
+        price=26.99, category="energy", icon="🌿",
         badges=["Top Rated", "Optional"], sort_order=6,
     ),
     dict(
@@ -120,7 +120,7 @@ DEFAULT_PRODUCTS = [
             "ja": "エネルギーと活力を高める伝統的なハーブ。",
             "ko": "에너지와 활력을 증진시키는 전통 허브.",
         },
-        price=32.99, category="herbs", icon="🌿",
+        price=32.99, category="energy", icon="🌿",
         badges=["Optional"], sort_order=7,
     ),
     dict(
@@ -136,7 +136,7 @@ DEFAULT_PRODUCTS = [
             "ja": "プレミアムターメリック抽出物による抗炎症作用。",
             "ko": "프리미엄 강황 추출물의 항염 효과.",
         },
-        price=21.99, category="herbs", icon="🌿",
+        price=21.99, category="bone-joint", icon="🌿",
         badges=["Optional"], sort_order=8,
     ),
     dict(
@@ -152,7 +152,7 @@ DEFAULT_PRODUCTS = [
             "ja": "自然な肝臓のデトックスと保護。",
             "ko": "천연 간 해독 및 보호.",
         },
-        price=19.99, category="herbs", icon="🌿",
+        price=19.99, category="digestive-health", icon="🌿",
         badges=["Optional"], sort_order=9,
     ),
     dict(
@@ -168,7 +168,7 @@ DEFAULT_PRODUCTS = [
             "ja": "専用アプリと連携するBluetooth対応モニター。",
             "ko": "전용 앱과 연동되는 블루투스 혈압계.",
         },
-        price=59.99, category="devices", icon="〽",
+        price=59.99, category="heart-health", icon="〽",
         badges=["New", "Optional"], sort_order=10,
     ),
     dict(
@@ -184,7 +184,7 @@ DEFAULT_PRODUCTS = [
             "ja": "代謝の状態を把握するリアルタイム血糖モニタリング。",
             "ko": "대사 건강을 위한 실시간 혈당 모니터링.",
         },
-        price=89.99, category="devices", icon="〽",
+        price=89.99, category="weight-management", icon="〽",
         badges=["Popular", "Optional"], sort_order=11,
     ),
     dict(
@@ -200,7 +200,7 @@ DEFAULT_PRODUCTS = [
             "ja": "より良い休息のための高度な睡眠段階トラッキング。",
             "ko": "더 나은 휴식을 위한 고급 수면 단계 추적.",
         },
-        price=49.99, category="devices", icon="〽",
+        price=49.99, category="sleep", icon="〽",
         badges=["Optional"], sort_order=12,
     ),
     dict(
@@ -216,7 +216,7 @@ DEFAULT_PRODUCTS = [
             "ja": "体脂肪、筋肉量、水分量を測定。",
             "ko": "체지방, 근육량, 수분 수치를 측정합니다.",
         },
-        price=44.99, category="devices", icon="〽",
+        price=44.99, category="weight-management", icon="〽",
         badges=["Optional"], sort_order=13,
     ),
     dict(
@@ -232,7 +232,7 @@ DEFAULT_PRODUCTS = [
             "ja": "キヌアとローストした野菜を添えた赤身タンパク質。",
             "ko": "퀴노아와 로스트 채소를 곁들인 저지방 단백질.",
         },
-        price=14.99, category="meals", icon="🍽",
+        price=14.99, category="healthy-foods", icon="🍽",
         badges=["Chef's Pick", "Optional"], sort_order=14,
     ),
     dict(
@@ -248,7 +248,7 @@ DEFAULT_PRODUCTS = [
             "ja": "代謝の健康のための7日間ケトジェニックミールプラン。",
             "ko": "대사 건강을 위한 7일 케토제닉 식단 플랜.",
         },
-        price=79.99, category="meals", icon="🍽",
+        price=79.99, category="healthy-foods", icon="🍽",
         badges=["Optional"], sort_order=15,
     ),
     dict(
@@ -264,7 +264,7 @@ DEFAULT_PRODUCTS = [
             "ja": "毎週届く新鮮な旬のオーガニック野菜。",
             "ko": "매주 배송되는 신선한 제철 유기농 채소.",
         },
-        price=34.99, category="meals", icon="🍽",
+        price=34.99, category="healthy-foods", icon="🍽",
         badges=["Optional"], sort_order=16,
     ),
     dict(
@@ -280,7 +280,7 @@ DEFAULT_PRODUCTS = [
             "ja": "天然甘味料を使ったヘルシーなお菓子。",
             "ko": "천연 대체 감미료로 만든 건강한 간식.",
         },
-        price=18.99, category="meals", icon="🍽",
+        price=18.99, category="healthy-foods", icon="🍽",
         badges=["Optional"], sort_order=17,
     ),
     dict(
@@ -296,7 +296,7 @@ DEFAULT_PRODUCTS = [
             "ja": "6種類のスターターオイル付き超音波ディフューザー。",
             "ko": "6종 스타터 오일이 포함된 초음파 디퓨저.",
         },
-        price=36.99, category="wellness", icon="♡",
+        price=36.99, category="sleep", icon="♡",
         badges=["Top Rated", "Optional"], sort_order=18,
     ),
     dict(
@@ -312,7 +312,7 @@ DEFAULT_PRODUCTS = [
             "ja": "より深く長い眠りのためのホワイトノイズと自然音。",
             "ko": "더 깊고 긴 수면을 위한 백색소음과 자연의 소리.",
         },
-        price=42.99, category="wellness", icon="♡",
+        price=42.99, category="sleep", icon="♡",
         badges=["Optional"], sort_order=19,
     ),
     dict(
@@ -328,7 +328,7 @@ DEFAULT_PRODUCTS = [
             "ja": "体系化されたマインドフルネスと呼吸法プログラム。",
             "ko": "체계적인 마음챙김 및 호흡 프로그램.",
         },
-        price=49.99, category="wellness", icon="♡",
+        price=49.99, category="brain-health", icon="♡",
         badges=["Popular", "Optional"], sort_order=20,
     ),
     dict(
@@ -344,7 +344,7 @@ DEFAULT_PRODUCTS = [
             "ja": "心の整理と落ち着きのためのガイド付きジャーナリングプロンプト。",
             "ko": "명료함과 안정을 위한 가이드 저널링 프롬프트.",
         },
-        price=16.99, category="wellness", icon="♡",
+        price=16.99, category="sleep", icon="♡",
         badges=["Optional"], sort_order=21,
     ),
 ]
@@ -395,12 +395,46 @@ def seed_products(db: Session) -> None:
 
 
 DEFAULT_CATEGORIES = [
-    dict(id="supplements", name="Supplements", icon="💊", sort_order=1),
-    dict(id="herbs", name="Herbs", icon="🍃", sort_order=2),
-    dict(id="devices", name="Devices", icon="〽", sort_order=3),
-    dict(id="meals", name="Meals", icon="🍽", sort_order=4),
-    dict(id="wellness", name="Wellness", icon="♡", sort_order=5),
+    dict(id="heart-health", name="Heart Health", icon="❤", sort_order=1),
+    dict(id="brain-health", name="Brain Health", icon="🧠", sort_order=2),
+    dict(id="digestive-health", name="Digestive Health", icon="🍃", sort_order=3),
+    dict(id="immune-health", name="Immune Health", icon="🛡", sort_order=4),
+    dict(id="sleep", name="Sleep", icon="🌙", sort_order=5),
+    dict(id="energy", name="Energy", icon="⚡", sort_order=6),
+    dict(id="bone-joint", name="Bone & Joint", icon="🦴", sort_order=7),
+    dict(id="weight-management", name="Weight Management", icon="⚖", sort_order=8),
+    dict(id="healthy-foods", name="Healthy foods", icon="🥗", sort_order=9),
 ]
+
+# One-time re-categorization: the marketplace used to be organized by
+# product type (Supplements/Herbs/Devices/Meals/Wellness). Moving to
+# "Health Goals" instead -- this maps each known seeded product to its
+# new category.
+PRODUCT_RECATEGORIZATION = {
+    "omega-3-fish-oil": "heart-health",
+    "vitamin-d3-5000iu": "immune-health",
+    "zinc-selenium-complex": "immune-health",
+    "vegan-protein-blend": "weight-management",
+    "magnesium-glycinate-400mg": "sleep",
+    "organic-ashwagandha": "energy",
+    "ginseng-root-extract": "energy",
+    "turmeric-curcumin-95": "bone-joint",
+    "milk-thistle-liver-support": "digestive-health",
+    "smart-blood-pressure-monitor": "heart-health",
+    "continuous-glucose-tracker": "weight-management",
+    "sleep-quality-sensor": "sleep",
+    "body-composition-scale": "weight-management",
+    "high-protein-chicken-bowl": "healthy-foods",
+    "keto-meal-plan-weekly": "healthy-foods",
+    "organic-vegetable-box": "healthy-foods",
+    "low-sugar-dessert-pack": "healthy-foods",
+    "aromatherapy-diffuser-kit": "sleep",
+    "sleep-sound-machine": "sleep",
+    "guided-meditation-app-1yr": "brain-health",
+    "stress-relief-journal-set": "sleep",
+}
+
+OLD_CATEGORY_IDS = ["supplements", "herbs", "devices", "meals", "wellness"]
 
 
 def seed_categories(db: Session) -> None:
@@ -419,3 +453,34 @@ def seed_categories(db: Session) -> None:
 
     if added:
         db.commit()
+
+
+def reorganize_into_health_goals(db: Session) -> None:
+    """One-time move from the old product-type categories to the new
+    Health Goals structure. Safe to call on every startup: only acts
+    if any of the old category ids still exist, and only reassigns
+    products that are still sitting on one of the old categories (so
+    it won't clobber a category an admin has since changed by hand)."""
+    old_categories_present = (
+        db.query(Category).filter(Category.id.in_(OLD_CATEGORY_IDS)).count()
+    )
+    if not old_categories_present:
+        return  # already migrated
+
+    products = db.query(Product).filter(Product.category.in_(OLD_CATEGORY_IDS)).all()
+    for product in products:
+        new_category = PRODUCT_RECATEGORIZATION.get(product.id)
+        if new_category:
+            product.category = new_category
+    db.commit()
+
+    # Now safe to remove the old categories, since nothing references
+    # them anymore (any product not in PRODUCT_RECATEGORIZATION -- e.g.
+    # one an admin added by hand under an old category -- is left on
+    # that old category rather than silently reassigned; the category
+    # row itself is only deleted once zero products use it).
+    for old_id in OLD_CATEGORY_IDS:
+        still_used = db.query(Product).filter(Product.category == old_id).count()
+        if still_used == 0:
+            db.query(Category).filter(Category.id == old_id).delete()
+    db.commit()

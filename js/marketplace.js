@@ -220,11 +220,15 @@
 
     const CATEGORY_NAME_TEXT = {
         all: { zh: "全部商品", ja: "すべての商品", ko: "전체 상품" },
-        supplements: { zh: "保健品", ja: "サプリメント", ko: "보충제" },
-        herbs: { zh: "草本", ja: "ハーブ", ko: "허브" },
-        devices: { zh: "设备", ja: "デバイス", ko: "기기" },
-        meals: { zh: "餐食", ja: "ミール", ko: "식단" },
-        wellness: { zh: "身心健康", ja: "ウェルネス", ko: "웰니스" }
+        "heart-health": { zh: "心脏健康", ja: "心臓の健康", ko: "심장 건강" },
+        "brain-health": { zh: "大脑健康", ja: "脳の健康", ko: "두뇌 건강" },
+        "digestive-health": { zh: "消化健康", ja: "消化の健康", ko: "소화 건강" },
+        "immune-health": { zh: "免疫健康", ja: "免疫の健康", ko: "면역 건강" },
+        "sleep": { zh: "睡眠", ja: "睡眠", ko: "수면" },
+        "energy": { zh: "精力", ja: "エネルギー", ko: "에너지" },
+        "bone-joint": { zh: "骨骼与关节", ja: "骨と関節", ko: "뼈 및 관절" },
+        "weight-management": { zh: "体重管理", ja: "体重管理", ko: "체중 관리" },
+        "healthy-foods": { zh: "健康食品", ja: "ヘルシーフード", ko: "건강식품" }
     };
 
     function categoryLabel(id, fallbackName) {
