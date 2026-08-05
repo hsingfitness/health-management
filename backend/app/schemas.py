@@ -127,7 +127,7 @@ class ProductCreate(BaseModel):
     name_i18n: dict[str, str] = Field(min_length=1)  # must have at least one language, ideally "en"
     description_i18n: dict[str, str] = Field(default_factory=dict)
     price: float = Field(gt=0)
-    category: str = Field(default="supplements", max_length=40)
+    category: str = Field(default="heart-health", max_length=40)
     icon: str = Field(default="💊", max_length=10)
     badges: list[str] = Field(default_factory=list)
     stripe_payment_link: str | None = None

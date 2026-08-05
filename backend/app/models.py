@@ -51,7 +51,7 @@ class Product(Base):
     name_i18n = Column(JSON, nullable=False, default=dict)
     description_i18n = Column(JSON, nullable=False, default=dict)
     price = Column(Numeric(10, 2), nullable=False)
-    category = Column(String(40), nullable=False, default="supplements")
+    category = Column(String(40), nullable=False, default="heart-health")
     icon = Column(String(10), nullable=False, default="💊")
     badges = Column(JSON, nullable=False, default=list)  # e.g. ["Best Seller", "Optional"]
     stripe_payment_link = Column(String(500), nullable=True)
