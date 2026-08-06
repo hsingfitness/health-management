@@ -42,6 +42,7 @@ COLUMN_MIGRATIONS = {
         ("description_i18n", "JSON NOT NULL DEFAULT '{}'"),
         ("content_type", "VARCHAR(20) NOT NULL DEFAULT 'physical'"),
         ("digital_content", "VARCHAR(20000)"),
+        ("internal_notes", "VARCHAR(2000)"),
     ],
 }
 

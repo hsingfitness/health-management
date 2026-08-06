@@ -104,7 +104,9 @@ class ProductOut(BaseModel):
 
 class AdminProductOut(BaseModel):
     """Admin shape: every language's text, for editing in the dashboard.
-    Includes the digital_content text itself since admins need to edit it."""
+    Includes the digital_content text itself since admins need to edit it,
+    and internal_notes — an admin-only field that must never appear in
+    ProductOut (the public shape) above."""
     id: str
     name_i18n: dict[str, str]
     description_i18n: dict[str, str]
@@ -117,6 +119,7 @@ class AdminProductOut(BaseModel):
     sort_order: int
     content_type: str = "physical"
     digital_content: str | None = None
+    internal_notes: str | None = None
 
     class Config:
         from_attributes = True
@@ -135,6 +138,7 @@ class ProductCreate(BaseModel):
     sort_order: int = 0
     content_type: str = Field(default="physical", pattern=r"^(physical|digital_text)$")
     digital_content: str | None = Field(default=None, max_length=20000)
+    internal_notes: str | None = Field(default=None, max_length=2000)
 
 
 class ProductUpdate(BaseModel):
@@ -149,6 +153,7 @@ class ProductUpdate(BaseModel):
     sort_order: int | None = None
     content_type: str | None = Field(default=None, pattern=r"^(physical|digital_text)$")
     digital_content: str | None = Field(default=None, max_length=20000)
+    internal_notes: str | None = Field(default=None, max_length=2000)
 
 
 # ---------- Categories ----------

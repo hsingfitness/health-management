@@ -62,6 +62,10 @@ class Product(Base):
     # is only served to a buyer once they have a paid order for this product.
     content_type = Column(String(20), nullable=False, default="physical")
     digital_content = Column(String(20000), nullable=True)
+    # Internal admin-only notes (supplier info, restock reminders, etc.).
+    # Never included in any public-facing schema — see AdminProductOut vs
+    # ProductOut in schemas.py.
+    internal_notes = Column(String(2000), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
