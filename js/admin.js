@@ -355,6 +355,7 @@
         document.getElementById("product-icon").value = product.icon;
         setSelectedBadges(product.badges || []);
         document.getElementById("product-stripe-link").value = product.stripe_payment_link || "";
+        document.getElementById("product-internal-notes").value = product.internal_notes || "";
         document.getElementById("product-active").checked = product.is_active;
         document.getElementById("product-content-type").value = product.content_type || "physical";
         document.getElementById("product-digital-content").value = product.digital_content || "";
@@ -395,6 +396,7 @@
         setSelectedBadges([]);
         document.getElementById("product-content-type").value = "physical";
         document.getElementById("product-digital-content").value = "";
+        document.getElementById("product-internal-notes").value = "";
         updateDigitalContentVisibility();
         document.querySelectorAll(".product-name-input, .product-description-input").forEach((el) => (el.value = ""));
         refreshLangTabDots();
@@ -469,6 +471,7 @@
             icon: document.getElementById("product-icon").value.trim() || "💊",
             badges,
             stripe_payment_link: document.getElementById("product-stripe-link").value.trim() || null,
+            internal_notes: document.getElementById("product-internal-notes").value.trim() || null,
             is_active: document.getElementById("product-active").checked,
             content_type: contentType,
             digital_content: contentType === "digital_text" ? digitalContent : null
