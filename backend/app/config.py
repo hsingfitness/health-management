@@ -22,9 +22,6 @@ class Settings:
     STRIPE_SECRET_KEY: str = os.getenv("STRIPE_SECRET_KEY", "")
     STRIPE_WEBHOOK_SECRET: str = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 
-    # Google Gemini (used for AI-generated health reports — free tier)
-    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
-
     # Gmail SMTP (used to forward contact-form submissions to your inbox)
     GMAIL_ADDRESS: str = os.getenv("GMAIL_ADDRESS", "")
     GMAIL_APP_PASSWORD: str = os.getenv("GMAIL_APP_PASSWORD", "")

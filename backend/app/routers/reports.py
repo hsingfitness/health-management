@@ -1,12 +1,6 @@
-import json
-
 from fastapi import APIRouter, Depends, HTTPException, status
-from google import genai
-from google.genai import types
-from google.genai import errors as genai_errors
 from sqlalchemy.orm import Session
 
-from ..config import settings
 from ..database import get_db
 from ..deps import get_current_user_optional
 from ..models import Report, User
@@ -14,60 +8,115 @@ from ..schemas import ReportOut, ReportRequest
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
-FREE_SYSTEM_PROMPT = """You are a wellness assistant generating a BASIC, general-information \
-health/lifestyle summary from a user's self-reported symptoms and a day of food/sleep logging.
+DISCLAIMER = (
+    "This is a general wellness summary, not a medical diagnosis. "
+    "Please consult a qualified healthcare provider for any health concerns."
+)
 
-Rules:
-- This is NOT a diagnosis and NOT medical advice. Never name a specific medical condition \
-as if confirmed. You may mention general possibilities in cautious, non-alarming language.
-- Always recommend seeing a healthcare professional for anything concerning.
-- Base recommendations only on general wellness knowledge (nutrition, sleep, hydration, activity).
-- Keep it supportive and plain-language, not clinical jargon.
-- Keep the summary short (2-4 sentences) and give 3-5 recommendations.
-"""
+URGENT_TERMS = (
+    "chest pain",
+    "shortness of breath",
+    "trouble breathing",
+    "difficulty breathing",
+    "faint",
+    "fainted",
+    "severe pain",
+    "stroke",
+    "suicidal",
+    "blood",
+)
 
-CUSTOMIZED_SYSTEM_PROMPT = """You are a premium wellness assistant generating a detailed, \
-personalized health/lifestyle analysis for a paying member, from their self-reported symptoms \
-and a day of food/sleep logging.
-
-Rules:
-- This is NOT a diagnosis and NOT medical advice. Never name a specific medical condition \
-as if confirmed. You may mention general possibilities in cautious, non-alarming language.
-- Always recommend seeing a healthcare professional for anything concerning.
-- Base recommendations only on general wellness knowledge (nutrition, sleep, hydration, activity).
-- This user has paid for a more thorough analysis: be more specific and personalized than a \
-generic summary — reference the particular foods/sleep pattern/symptoms they described, connect \
-likely cause and effect, and give concrete, actionable next steps (e.g. specific foods to add or \
-avoid, a sleep-timing suggestion, an activity suggestion) rather than generic tips.
-- Write the summary as 4-6 sentences with real specificity, and give 6-8 recommendations covering \
-nutrition, activity, sleep, and hydration.
-- Tone: still supportive and plain-language, but thorough and attentive, like a dedicated coach.
-"""
-
-RESPONSE_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "summary": {"type": "string", "description": "Plain-language summary"},
-        "risk_level": {"type": "string", "enum": ["Low", "Moderate", "See a doctor soon"]},
-        "recommendations": {
-            "type": "array",
-            "items": {"type": "string"},
-            "minItems": 3,
-            "maxItems": 8,
-        },
-    },
-    "required": ["summary", "risk_level", "recommendations"],
-}
+MODERATE_TERMS = (
+    "fever",
+    "dizzy",
+    "dizziness",
+    "vomit",
+    "vomiting",
+    "diarrhea",
+    "migraine",
+    "persistent",
+    "worse",
+    "worsening",
+    "pain",
+)
 
 
-def _build_user_message(payload: ReportRequest) -> str:
+def _contains_any(text: str, terms: tuple[str, ...]) -> bool:
+    normalized = text.lower()
+    return any(term in normalized for term in terms)
+
+
+def _risk_level(symptom_details: str) -> str:
+    if _contains_any(symptom_details, URGENT_TERMS):
+        return "See a doctor soon"
+    if _contains_any(symptom_details, MODERATE_TERMS):
+        return "Moderate"
+    return "Low"
+
+
+def _missing_meals(payload: ReportRequest) -> list[str]:
+    return [
+        label
+        for label, value in (
+            ("breakfast", payload.breakfast),
+            ("lunch", payload.lunch),
+            ("dinner", payload.dinner),
+        )
+        if not value.strip()
+    ]
+
+
+def _build_summary(payload: ReportRequest, risk_level: str, tier: str) -> str:
+    meal_note = ""
+    missing = _missing_meals(payload)
+    if missing:
+        meal_note = f" Your log is missing {', '.join(missing)}, so nutrition suggestions are limited."
+
+    sleep_note = ""
+    if payload.sleep.strip():
+        sleep_note = " Your sleep note is included as a lifestyle factor to review."
+    else:
+        sleep_note = " Adding sleep duration and sleep quality next time will make the review more useful."
+
+    if tier == "customized":
+        return (
+            f"Based on the symptoms you described, this rule-based wellness review rates the current concern as {risk_level.lower()}. "
+            "It looks at your symptom note together with your meal and sleep entries, without using an AI model or outside service."
+            f"{meal_note}{sleep_note} Track whether symptoms improve, stay the same, or get worse over the next day."
+        )
+
     return (
-        f"Symptoms / concerns: {payload.symptom_details}\n\n"
-        f"Breakfast: {payload.breakfast or 'not provided'}\n"
-        f"Lunch: {payload.lunch or 'not provided'}\n"
-        f"Dinner: {payload.dinner or 'not provided'}\n"
-        f"Sleep: {payload.sleep or 'not provided'}"
+        f"Based on the symptoms you described, this rule-based wellness review rates the current concern as {risk_level.lower()}. "
+        "It uses only the information you entered and does not call an AI model or external report service."
+        f"{meal_note}{sleep_note}"
     )
+
+
+def _build_recommendations(payload: ReportRequest, risk_level: str, tier: str) -> list[str]:
+    recommendations = [
+        "Stay hydrated and choose balanced meals with protein, fiber-rich carbohydrates, and colorful fruits or vegetables.",
+        "Prioritize rest and keep a simple log of symptoms, meals, sleep, and any triggers you notice.",
+        "Seek professional medical advice if symptoms are concerning, severe, unusual, or not improving.",
+    ]
+
+    if _missing_meals(payload):
+        recommendations.append("Fill in all meals next time so the wellness review can better reflect your day.")
+    if not payload.sleep.strip():
+        recommendations.append("Record sleep duration and sleep quality, since poor sleep can affect energy, appetite, and recovery.")
+    if risk_level == "See a doctor soon":
+        recommendations.insert(0, "Because your symptoms include potential red flags, consider contacting a healthcare professional promptly.")
+    elif risk_level == "Moderate":
+        recommendations.append("If symptoms persist, worsen, or interfere with normal activities, arrange a medical check-in.")
+
+    if tier == "customized":
+        recommendations.extend(
+            [
+                "Review whether symptoms appeared after any specific meal, caffeine intake, stress, exercise, or missed sleep.",
+                "Plan a consistent wake time and a calming pre-sleep routine for the next few nights.",
+            ]
+        )
+
+    return recommendations[:8]
 
 
 @router.post("/generate", response_model=ReportOut, status_code=status.HTTP_201_CREATED)
@@ -76,44 +125,15 @@ def generate_report(
     db: Session = Depends(get_db),
     current_user: User | None = Depends(get_current_user_optional),
 ):
-    if not settings.GEMINI_API_KEY:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="AI report generation isn't configured yet. Set GEMINI_API_KEY on the server.",
-        )
-
     # Tier is decided server-side from the authenticated user's paid plan —
     # never trust a client-supplied flag for this.
     tier = "customized" if (current_user and current_user.plan in ("member", "vip")) else "free"
-    system_prompt = CUSTOMIZED_SYSTEM_PROMPT if tier == "customized" else FREE_SYSTEM_PROMPT
-
-    client = genai.Client(api_key=settings.GEMINI_API_KEY)
-
-    try:
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=_build_user_message(payload),
-            config=types.GenerateContentConfig(
-                system_instruction=system_prompt,
-                response_mime_type="application/json",
-                response_schema=RESPONSE_SCHEMA,
-            ),
-        )
-        parsed = json.loads(response.text)
-    except (genai_errors.APIError, json.JSONDecodeError, KeyError) as e:
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"Couldn't generate a report right now: {e}",
-        )
-
+    risk_level = _risk_level(payload.symptom_details)
     output = {
-        "summary": parsed["summary"],
-        "risk_level": parsed["risk_level"],
-        "recommendations": parsed["recommendations"],
-        "disclaimer": (
-            "This is a general wellness summary, not a medical diagnosis. "
-            "Please consult a qualified healthcare provider for any health concerns."
-        ),
+        "summary": _build_summary(payload, risk_level, tier),
+        "risk_level": risk_level,
+        "recommendations": _build_recommendations(payload, risk_level, tier),
+        "disclaimer": DISCLAIMER,
         "tier": tier,
     }
 

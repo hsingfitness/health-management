@@ -60,7 +60,6 @@ def integration_status():
     """
     return {
         "database": bool(settings.DATABASE_URL and not settings.DATABASE_URL.startswith("sqlite")),
-        "gemini_configured": bool(settings.GEMINI_API_KEY),
         "stripe_configured": bool(settings.STRIPE_SECRET_KEY),
         "gmail_address_set": bool(settings.GMAIL_ADDRESS),
         "gmail_address_value_preview": (
