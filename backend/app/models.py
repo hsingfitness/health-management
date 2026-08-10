@@ -55,6 +55,7 @@ class Product(Base):
     icon = Column(String(10), nullable=False, default="💊")
     badges = Column(JSON, nullable=False, default=list)  # e.g. ["Best Seller", "Optional"]
     stripe_payment_link = Column(String(500), nullable=True)
+    stripe_price_id = Column(String(255), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
     sort_order = Column(Integer, nullable=False, default=0)
     # "physical" (default) or "digital_text". Digital-text products show a
@@ -89,6 +90,8 @@ class Order(Base):
     amount_total = Column(Numeric(10, 2), nullable=False)
     currency = Column(String(10), default="usd")
     stripe_session_id = Column(String(255), unique=True, nullable=True)
+    stripe_payment_intent_id = Column(String(255), nullable=True)
+    access_token = Column(String(255), unique=True, nullable=True, index=True)
     status = Column(String(20), default="pending")  # pending -> paid | canceled
     # Order fulfillment, separate from payment status: "pending" -> "shipped" -> "delivered"
     delivery_status = Column(String(20), nullable=False, default="pending")

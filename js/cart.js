@@ -5,7 +5,7 @@
    - Injects a cart icon (if a page doesn't already have one) and a
      slide-in drawer, so the cart works site-wide without editing
      every page's HTML by hand
-   - Checkout hands off to Stripe Payment Links (see js/stripe-links.js)
+   - Checkout creates one backend Stripe Checkout Session for the whole cart
 =================================== */
 
 (function () {
@@ -26,14 +26,7 @@
         },
         remove: { zh: "移除", ja: "削除", ko: "삭제" },
         checkoutWithStripe: { zh: "使用 Stripe 结账 →", ja: "Stripeで支払う →", ko: "Stripe로 결제 →" },
-        checkoutNotSetUp: { zh: "结账功能尚未设置", ja: "決済はまだ設定されていません", ko: "아직 결제가 설정되지 않았습니다" },
-        splitNote: {
-            zh: "您的购物车中包含多个不同的商品。由于结账通过 Stripe Payment Links 处理，请为以下每件商品分别完成安全付款：",
-            ja: "複数の商品がカートに入っています。決済はStripe Payment Linksで行われるため、以下の商品ごとに個別にお支払いください：",
-            ko: "여러 종류의 상품이 장바구니에 있습니다. 결제는 Stripe Payment Links로 처리되므로 아래 각 상품에 대해 개별적으로 안전하게 결제해 주세요:"
-        },
-        payFor: { zh: "支付", ja: "支払う：", ko: "결제:" },
-        checkoutNotSetUpItem: { zh: "— 结账尚未设置", ja: "— 決済未設定", ko: "— 결제 미설정" },
+        checkoutStarting: { zh: "正在跳转到安全结账…", ja: "安全な決済に移動しています…", ko: "보안 결제로 이동 중…" },
         addedToCart: { zh: "已加入购物车", ja: "をカートに追加しました", ko: "장바구니에 담았습니다" },
         each: { zh: "/件", ja: "/個", ko: "/개" }
     };
@@ -337,60 +330,68 @@
 
     function renderCheckoutArea(items) {
         checkoutAreaEl.innerHTML = "";
-        var links = window.STRIPE_PAYMENT_LINKS || {};
-        var distinctIds = Array.from(new Set(items.map(function (i) { return i.id; })));
 
-        if (distinctIds.length === 1) {
-            var only = items[0];
-            var link = links[only.id];
-
-            var btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "button cart-checkout-btn";
-
-            if (link) {
-                btn.textContent = t("checkoutWithStripe", "Checkout with Stripe \u2192");
-                btn.addEventListener("click", function () {
-                    window.location.href = link;
-                });
-            } else {
-                btn.textContent = t("checkoutNotSetUp", "Checkout not set up yet");
-                btn.disabled = true;
-                btn.title = "This product doesn't have a Stripe Payment Link configured yet.";
-            }
-
-            checkoutAreaEl.appendChild(btn);
-            return;
-        }
-
-        // Multiple distinct products: no backend to combine into one Stripe
-        // session, so offer a separate secure checkout per product.
-        var note = document.createElement("p");
-        note.className = "cart-note cart-note--split";
-        note.textContent = t(
-            "splitNote",
-            "You have items from multiple products. Since checkout is powered by Stripe Payment Links, please complete a quick secure payment for each product below:"
-        );
-        checkoutAreaEl.appendChild(note);
-
-        items.forEach(function (item) {
-            var link = links[item.id];
-            var row = document.createElement("button");
-            row.type = "button";
-            row.className = "button button-outline cart-checkout-row";
-
-            if (link) {
-                row.textContent = t("payFor", "Pay for") + " " + item.name + " (\u00d7" + item.qty + ") \u2014 " + formatPrice(item.price * item.qty);
-                row.addEventListener("click", function () {
-                    window.open(link, "_blank", "noopener");
-                });
-            } else {
-                row.textContent = item.name + " " + t("checkoutNotSetUpItem", "\u2014 checkout not set up yet");
-                row.disabled = true;
-            }
-
-            checkoutAreaEl.appendChild(row);
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "button cart-checkout-btn";
+        btn.textContent = t("checkoutWithStripe", "Checkout with Stripe \u2192");
+        btn.addEventListener("click", function () {
+            startBackendCheckout(items, btn);
         });
+
+        checkoutAreaEl.appendChild(btn);
+    }
+
+    function authHeaders() {
+        var headers = { "Content-Type": "application/json" };
+        if (typeof getToken === "function" && getToken()) {
+            headers.Authorization = "Bearer " + getToken();
+        }
+        return headers;
+    }
+
+    async function startBackendCheckout(items, btn) {
+        if (!items || items.length === 0 || typeof API_BASE === "undefined") return;
+
+        btn.disabled = true;
+        btn.textContent = t("checkoutStarting", "Redirecting to secure checkout…");
+
+        try {
+            var response = await fetch(API_BASE + "/payments/create-checkout-session", {
+                method: "POST",
+                headers: authHeaders(),
+                body: JSON.stringify({
+                    type: "marketplace",
+                    items: items.map(function (item) {
+                        return { product_id: item.id, quantity: item.qty };
+                    }),
+                    success_path: "/marketplace.html?checkout=success",
+                    cancel_path: "/marketplace.html?checkout=canceled"
+                })
+            });
+
+            var data = await response.json().catch(function () { return null; });
+            if (!response.ok) {
+                throw new Error(formatApiError(data && data.detail));
+            }
+            if (!data || !data.checkout_url) {
+                throw new Error("Checkout could not be started. Please try again.");
+            }
+            window.location.href = data.checkout_url;
+        } catch (err) {
+            btn.disabled = false;
+            btn.textContent = t("checkoutWithStripe", "Checkout with Stripe \u2192");
+            showToast(err.message || "Checkout could not be started. Please try again.");
+        }
+    }
+
+    function formatApiError(detail) {
+        if (!detail) return "Checkout could not be started. Please try again.";
+        if (typeof detail === "string") return detail;
+        if (Array.isArray(detail)) {
+            return detail.map(function (entry) { return entry.msg || entry.message || String(entry); }).join(" ");
+        }
+        return detail.message || String(detail);
     }
 
     function escapeHtml(str) {
