@@ -36,6 +36,8 @@ COLUMN_MIGRATIONS = {
     ],
     "orders": [
         ("delivery_status", "VARCHAR(20) NOT NULL DEFAULT 'pending'"),
+        ("stripe_payment_intent_id", "VARCHAR(255)"),
+        ("access_token", "VARCHAR(255)"),
     ],
     "products": [
         ("name_i18n", "JSON NOT NULL DEFAULT '{}'"),
@@ -43,6 +45,7 @@ COLUMN_MIGRATIONS = {
         ("content_type", "VARCHAR(20) NOT NULL DEFAULT 'physical'"),
         ("digital_content", "VARCHAR(20000)"),
         ("internal_notes", "VARCHAR(2000)"),
+        ("stripe_price_id", "VARCHAR(255)"),
     ],
 }
 

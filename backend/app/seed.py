@@ -1,3 +1,5 @@
+import os
+
 from sqlalchemy.orm import Session
 
 from .models import Category, Product
@@ -350,6 +352,17 @@ DEFAULT_PRODUCTS = [
 ]
 
 
+def _stripe_price_env_name(product_id: str) -> str:
+    return "STRIPE_PRICE_" + product_id.upper().replace("-", "_")
+
+def _apply_stripe_price_ids() -> None:
+    for product in DEFAULT_PRODUCTS:
+        product["stripe_price_id"] = os.getenv(_stripe_price_env_name(product["id"]), product.get("stripe_price_id"))
+
+
+_apply_stripe_price_ids()
+
+
 def seed_products(db: Session) -> None:
     """Insert any default-catalog product that isn't already in the
     database yet, matched by id. Safe to call on every startup: existing
@@ -389,6 +402,11 @@ def seed_products(db: Session) -> None:
             product.name_i18n = name_i18n
         if description_i18n != (product.description_i18n or {}):
             product.description_i18n = description_i18n
+
+        env_price_id = data.get("stripe_price_id")
+        if env_price_id and not product.stripe_price_id:
+            product.stripe_price_id = env_price_id
+            changed = True
 
     if changed:
         db.commit()

@@ -61,6 +61,7 @@ def integration_status():
     return {
         "database": bool(settings.DATABASE_URL and not settings.DATABASE_URL.startswith("sqlite")),
         "stripe_configured": bool(settings.STRIPE_SECRET_KEY),
+        "stripe_webhook_configured": bool(settings.STRIPE_WEBHOOK_SECRET),
         "gmail_address_set": bool(settings.GMAIL_ADDRESS),
         "gmail_address_value_preview": (
             settings.GMAIL_ADDRESS[:3] + "***" + settings.GMAIL_ADDRESS[-8:]
