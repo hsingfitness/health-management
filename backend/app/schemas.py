@@ -32,22 +32,29 @@ class TokenResponse(BaseModel):
 
 
 class CheckoutItem(BaseModel):
-    id: str
-    name: str
-    price: float = Field(gt=0)
-    qty: int = Field(gt=0, le=99)
+    # Backward compatible Member/VIP fields: id/name/price/qty.
+    # Marketplace should send only product_id and quantity; server decides price and Stripe Price ID.
+    id: str | None = None
+    product_id: str | None = None
+    name: str | None = None
+    price: float | None = Field(default=None, gt=0)
+    qty: int | None = Field(default=None, gt=0, le=99)
+    quantity: int | None = Field(default=None, gt=0, le=99)
 
 
 class CheckoutRequest(BaseModel):
+    type: str | None = None
     items: list[CheckoutItem] = Field(min_length=1)
     # Where to send the browser after Stripe Checkout. Defaults to the cart
     # page (marketplace orders); the assessment paywall passes its own.
-    success_path: str = "/cart.html?checkout=success"
-    cancel_path: str = "/cart.html?checkout=canceled"
+    success_path: str = "/marketplace.html?checkout=success"
+    cancel_path: str = "/marketplace.html?checkout=canceled"
 
 
 class CheckoutResponse(BaseModel):
     checkout_url: str
+    order_id: str | None = None
+    order_access_token: str | None = None
 
 
 class OrderOut(BaseModel):
@@ -115,6 +122,7 @@ class AdminProductOut(BaseModel):
     icon: str
     badges: list[str]
     stripe_payment_link: str | None = None
+    stripe_price_id: str | None = None
     is_active: bool
     sort_order: int
     content_type: str = "physical"
@@ -134,6 +142,7 @@ class ProductCreate(BaseModel):
     icon: str = Field(default="💊", max_length=10)
     badges: list[str] = Field(default_factory=list)
     stripe_payment_link: str | None = None
+    stripe_price_id: str | None = None
     is_active: bool = True
     sort_order: int = 0
     content_type: str = Field(default="physical", pattern=r"^(physical|digital_text)$")
@@ -149,6 +158,7 @@ class ProductUpdate(BaseModel):
     icon: str | None = Field(default=None, max_length=10)
     badges: list[str] | None = None
     stripe_payment_link: str | None = None
+    stripe_price_id: str | None = None
     is_active: bool | None = None
     sort_order: int | None = None
     content_type: str | None = Field(default=None, pattern=r"^(physical|digital_text)$")
