@@ -1,8 +1,7 @@
 # Health Management API
 
 FastAPI backend for the Health Management site. Currently provides
-signup/login (JWT-based). Stripe checkout and AI report generation will be
-added as separate routers as they're built.
+signup/login (JWT-based), Stripe checkout, and rule-based assessment report generation.
 
 ## Endpoints
 
@@ -15,7 +14,7 @@ added as separate routers as they're built.
 | POST   | `/api/payments/create-checkout-session` | optional | Create a Stripe Checkout Session for the cart; returns a `checkout_url` to redirect to. Works for guests too — attaches the order to the logged-in user if a token is sent. |
 | POST   | `/api/payments/webhook` | no (Stripe-signed) | Stripe calls this when a payment completes; marks the matching order as `paid`. |
 | GET    | `/api/payments/orders` | yes (Bearer) | List the current user's past orders. |
-| POST   | `/api/reports/generate` | optional | Generate an AI basic health report from the assessment form (via Google Gemini). Saves to history if logged in. |
+| POST   | `/api/reports/generate` | optional | Generate a rule-based wellness report from the assessment form. Saves to history if logged in. |
 | GET    | `/api/reports` | yes (Bearer) | List the current user's past reports. |
 
 `signup` and `login` both return:
@@ -67,13 +66,10 @@ useful for testing signup/login without touching the frontend at all.
    success/cancel redirect URLs are built from the first origin in that
    list.
 
-The frontend's cart drawer currently checks out via per-product **Stripe
-Payment Links** (`js/stripe-links.js`), configured with no backend needed.
-This API adds a second option — a single combined Checkout Session for the
-whole cart — which is generally the better experience for multi-item
-orders. Swapping the cart's checkout button to call
-`POST /api/payments/create-checkout-session` instead of (or in addition to)
-the Payment Links flow is a frontend change, not yet wired up.
+The frontend cart drawer now calls `POST /api/payments/create-checkout-session`
+with `{ "type": "marketplace", "items": [{ "product_id": "omega-3-fish-oil", "quantity": 2 }] }`.
+The backend validates active products, server-side prices, and configured
+Stripe Price IDs, then creates one combined Checkout Session for the whole cart.
 
 ## Deploying to Render
 
@@ -112,3 +108,35 @@ exact API contract.
 
 Note: Render's free tier spins down after inactivity, so the first request
 after a while can take 30–60 seconds to wake up. That's expected.
+
+
+## Marketplace Stripe Price IDs
+
+Marketplace checkout requires `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and `STRIPE_PRICE_<PRODUCT_ID_WITH_UNDERSCORES_IN_UPPERCASE>` for each product (for example `STRIPE_PRICE_OMEGA_3_FISH_OIL`). The frontend never sends prices or Stripe Price IDs.
+
+
+### Default marketplace product → Stripe Price ID mapping
+
+| Product ID | Environment variable |
+|---|---|
+| `omega-3-fish-oil` | `STRIPE_PRICE_OMEGA_3_FISH_OIL` |
+| `vitamin-d3-5000iu` | `STRIPE_PRICE_VITAMIN_D3_5000IU` |
+| `zinc-selenium-complex` | `STRIPE_PRICE_ZINC_SELENIUM_COMPLEX` |
+| `vegan-protein-blend` | `STRIPE_PRICE_VEGAN_PROTEIN_BLEND` |
+| `magnesium-glycinate-400mg` | `STRIPE_PRICE_MAGNESIUM_GLYCINATE_400MG` |
+| `organic-ashwagandha` | `STRIPE_PRICE_ORGANIC_ASHWAGANDHA` |
+| `ginseng-root-extract` | `STRIPE_PRICE_GINSENG_ROOT_EXTRACT` |
+| `turmeric-curcumin-95` | `STRIPE_PRICE_TURMERIC_CURCUMIN_95` |
+| `milk-thistle-liver-support` | `STRIPE_PRICE_MILK_THISTLE_LIVER_SUPPORT` |
+| `smart-blood-pressure-monitor` | `STRIPE_PRICE_SMART_BLOOD_PRESSURE_MONITOR` |
+| `continuous-glucose-tracker` | `STRIPE_PRICE_CONTINUOUS_GLUCOSE_TRACKER` |
+| `sleep-quality-sensor` | `STRIPE_PRICE_SLEEP_QUALITY_SENSOR` |
+| `body-composition-scale` | `STRIPE_PRICE_BODY_COMPOSITION_SCALE` |
+| `high-protein-chicken-bowl` | `STRIPE_PRICE_HIGH_PROTEIN_CHICKEN_BOWL` |
+| `keto-meal-plan-weekly` | `STRIPE_PRICE_KETO_MEAL_PLAN_WEEKLY` |
+| `organic-vegetable-box` | `STRIPE_PRICE_ORGANIC_VEGETABLE_BOX` |
+| `low-sugar-dessert-pack` | `STRIPE_PRICE_LOW_SUGAR_DESSERT_PACK` |
+| `aromatherapy-diffuser-kit` | `STRIPE_PRICE_AROMATHERAPY_DIFFUSER_KIT` |
+| `sleep-sound-machine` | `STRIPE_PRICE_SLEEP_SOUND_MACHINE` |
+| `guided-meditation-app-1yr` | `STRIPE_PRICE_GUIDED_MEDITATION_APP_1YR` |
+| `stress-relief-journal-set` | `STRIPE_PRICE_STRESS_RELIEF_JOURNAL_SET` |

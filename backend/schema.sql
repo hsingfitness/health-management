@@ -85,3 +85,9 @@ alter table products enable row level security;
 alter table users add column if not exists role varchar(20) not null default 'user';
 alter table users add column if not exists permissions jsonb not null default '{}'::jsonb;
 alter table users add column if not exists plan varchar(20) not null default 'free';
+
+-- Marketplace backend Stripe Checkout migration columns
+alter table products add column if not exists stripe_price_id varchar(255);
+alter table orders add column if not exists stripe_payment_intent_id varchar(255);
+alter table orders add column if not exists access_token varchar(255);
+create unique index if not exists idx_orders_access_token on orders (access_token);

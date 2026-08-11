@@ -1,7 +1,7 @@
 /* =========================================================
    Health Management — Guest/Member Assessment
    Submits the assessment form to the FastAPI backend and
-   renders the AI-generated basic report inline.
+   renders the rule-based wellness report inline.
 ========================================================= */
 
 function showAssessmentError(message) {
