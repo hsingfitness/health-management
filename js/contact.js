@@ -1,7 +1,7 @@
 /* =========================================================
    Health Management — Contact Form
-   Sends customer enquiries directly to the FastAPI backend,
-   which forwards the message to the site owner's inbox.
+   Sends customer enquiries through Web3Forms,
+   which forwards the message to the site owner's Gmail inbox.
 ========================================================= */
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -15,7 +15,8 @@ document.addEventListener("DOMContentLoaded", function () {
         sendingBtn: { zh: "正在发送…", ja: "送信中…", ko: "보내는 중…" },
         sendingMsg: { zh: "正在发送您的消息…", ja: "メッセージを送信しています…", ko: "메시지를 보내는 중…" },
         success: { zh: "谢谢！您的消息已发送，我们会尽快回复。", ja: "ありがとうございます。メッセージを送信しました。できるだけ早く返信します。", ko: "감사합니다! 메시지가 전송되었습니다. 최대한 빨리 답변드리겠습니다." },
-        serverUnavailable: { zh: "现在无法连接消息服务器。请稍后再试。", ja: "現在メッセージサーバーに接続できません。後でもう一度お試しください。", ko: "지금 메시지 서버에 연결할 수 없습니다. 나중에 다시 시도해 주세요." },
+        serverUnavailable: { zh: "现在无法连接消息服务。请稍后再试。", ja: "現在メッセージサービスに接続できません。後でもう一度お試しください。", ko: "지금 메시지 서비스에 연결할 수 없습니다. 나중에 다시 시도해 주세요." },
+        missingAccessKey: { zh: "请先配置 Web3Forms access key。", ja: "先に Web3Forms access key を設定してください。", ko: "먼저 Web3Forms access key를 설정해 주세요." },
         sendFailed: { zh: "现在无法发送消息。请稍后再试。", ja: "現在メッセージを送信できません。後でもう一度お試しください。", ko: "지금 메시지를 보낼 수 없습니다. 나중에 다시 시도해 주세요." }
     };
 
@@ -88,20 +89,18 @@ document.addEventListener("DOMContentLoaded", function () {
         showMessage(t("sendingMsg", "Sending your message…"), "pending");
 
         try {
-            if (typeof API_BASE === "undefined") {
-                throw new Error(t("serverUnavailable", "Can't reach the message server right now. Please try again later."));
+            const accessKey = contactForm.querySelector("input[name=access_key]");
+            if (!accessKey || accessKey.value === "YOUR_ACCESS_KEY_HERE") {
+                throw new Error(t("missingAccessKey", "Please configure the Web3Forms access key first."));
             }
 
-            const mailSubject = (subject.value || "New message from contact form").trim();
-            const response = await fetch(API_BASE + "/contact", {
+            const formData = new FormData(contactForm);
+            formData.set("subject", (subject.value || "New message from contact form").trim());
+
+            const response = await fetch(contactForm.action, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    name: name.value.trim(),
-                    email: email.value.trim(),
-                    subject: mailSubject,
-                    message: message.value.trim()
-                })
+                headers: { "Accept": "application/json" },
+                body: formData
             });
 
             let data = null;
@@ -119,7 +118,7 @@ document.addEventListener("DOMContentLoaded", function () {
             showMessage(t("success", "Thank you! Your message has been sent, and we'll reply as soon as possible."), "success");
         } catch (err) {
             const networkMessage = err.message === "Failed to fetch"
-                ? t("serverUnavailable", "Can't reach the message server right now. Please try again later.")
+                ? t("serverUnavailable", "Can't reach the message service right now. Please try again later.")
                 : err.message;
             showMessage(networkMessage || t("sendFailed", "Couldn't send your message right now. Please try again later."), "error");
         } finally {
