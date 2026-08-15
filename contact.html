@@ -199,7 +199,18 @@ intelligent analysis to support better health decisions.
 
 <h2 data-i18n="contact.sendMessage">Send A Message</h2>
 
-<form id="contact-form" data-recipient="hsing3644791@gmail.com">
+<div class="message-delivery-flow" aria-label="Message delivery flow">
+<span>Website</span>
+<span aria-hidden="true">↓</span>
+<span>Web3Forms</span>
+<span aria-hidden="true">↓</span>
+<span>Your Gmail</span>
+</div>
+
+<form id="contact-form" action="https://api.web3forms.com/submit" method="POST" data-recipient="hsing3644791@gmail.com">
+<input type="hidden" name="access_key" value="YOUR_ACCESS_KEY_HERE">
+<input type="hidden" name="from_name" value="Health Management Website">
+<input type="checkbox" name="botcheck" class="hidden" style="display:none;" tabindex="-1" autocomplete="off">
 
 <label for="name" data-i18n="contact.nameLabel">Name</label>
 <input type="text" id="name" name="name" placeholder="Your name" data-i18n-placeholder="contact.namePlaceholder" required>
