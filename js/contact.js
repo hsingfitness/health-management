@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         showMessage(t("openingMsg", "Opening your email app…"), "pending");
 
-        const ownerEmail = contactForm.dataset.recipient || "contact@healthmanagement.com";
+        const ownerEmail = contactForm.dataset.recipient || "hsing3644791@gmail.com";
         const mailSubject = (subject.value || "New message from contact form").trim();
         const mailBody = [
             "New customer enquiry from Health Management",
