@@ -14,6 +14,7 @@
     "use strict";
 
     var STORAGE_KEY = "hm_lang";
+    var BRAND_NAME = "Health Management";
 
     var LANGUAGES = [
         { code: "en", flag: "🇺🇸", label: "English", short: "EN" },
@@ -157,13 +158,19 @@
             });
         }
 
+        restoreBrandName();
+
         document.querySelectorAll("[data-i18n]").forEach(function (el) {
+            if (isBrandNameElement(el)) return;
+
             if (el.dataset.i18nOriginal === undefined) {
                 el.dataset.i18nOriginal = el.textContent.trim();
             }
             var key = el.getAttribute("data-i18n");
             el.textContent = (code !== "en" && dict[key]) ? dict[key] : el.dataset.i18nOriginal;
         });
+
+        restoreBrandName();
 
         document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
             if (el.dataset.i18nPlaceholderOriginal === undefined) {
@@ -179,6 +186,18 @@
         translateAuthSlot(dict, code);
 
         document.dispatchEvent(new CustomEvent("hm:languagechange", { detail: { lang: code } }));
+    }
+
+    function isBrandNameElement(el) {
+        return !!(el && el.closest && el.closest(".brand-name"));
+    }
+
+    function restoreBrandName() {
+        document.querySelectorAll("header .brand-name").forEach(function (el) {
+            if (el.textContent.trim() !== BRAND_NAME) {
+                el.textContent = BRAND_NAME;
+            }
+        });
     }
 
     // js/auth.js renders the Log In button / account menu dynamically,
