@@ -1,7 +1,7 @@
 /* =========================================================
    Health Management — Contact Form
-   Submits to the FastAPI backend, which emails the message
-   to the site owner's inbox via Gmail SMTP.
+   Uses a free mailto link so customer enquiries open in the
+   visitor's email app addressed to the site owner's inbox.
 ========================================================= */
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -12,15 +12,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const STRINGS = {
         fillRequired: { zh: "请填写所有必填字段。", ja: "必須項目をすべて入力してください。", ko: "필수 항목을 모두 입력해 주세요." },
         invalidEmail: { zh: "请输入有效的电子邮箱地址。", ja: "有効なメールアドレスを入力してください。", ko: "유효한 이메일 주소를 입력해 주세요." },
-        sendingBtn: { zh: "发送中…", ja: "送信中…", ko: "전송 중…" },
-        sendingMsg: { zh: "正在发送消息…", ja: "メッセージを送信しています…", ko: "메시지를 보내는 중…" },
-        success: { zh: "消息已发送！我们会尽快回复您。", ja: "メッセージを送信しました。追ってご連絡いたします。", ko: "메시지가 전송되었습니다! 곧 답변드리겠습니다." },
-        genericError: { zh: "发送消息时出现问题。", ja: "メッセージの送信中に問題が発生しました。", ko: "메시지 전송 중 문제가 발생했습니다." },
-        unreachable: {
-            zh: "目前无法连接到服务器。后端可能尚未部署 — 请稍后再试。",
-            ja: "現在サーバーに接続できません。バックエンドがまだデプロイされていない可能性があります。しばらくしてから再度お試しください。",
-            ko: "지금은 서버에 연결할 수 없습니다. 백엔드가 아직 배포되지 않았을 수 있습니다 — 나중에 다시 시도해 주세요."
-        }
+        openingBtn: { zh: "打开邮箱…", ja: "メールを開いています…", ko: "이메일 앱 여는 중…" },
+        openingMsg: { zh: "正在打开您的邮箱应用…", ja: "メールアプリを開いています…", ko: "이메일 앱을 여는 중…" },
+        success: { zh: "您的邮箱应用已打开。请点击发送，我们就会收到您的咨询。", ja: "メールアプリが開きました。送信を押すとお問い合わせが届きます。", ko: "이메일 앱이 열렸습니다. 보내기를 누르면 문의가 접수됩니다." }
     };
 
     function currentLang() {
@@ -75,47 +69,35 @@ document.addEventListener("DOMContentLoaded", function () {
         const originalLabel = submitBtn ? submitBtn.innerHTML : null;
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.textContent = t("sendingBtn", "Sending…");
+            submitBtn.textContent = t("openingBtn", "Opening email…");
         }
 
-        showMessage(t("sendingMsg", "Sending message…"), "pending");
+        showMessage(t("openingMsg", "Opening your email app…"), "pending");
 
-        try {
-            const response = await fetch(API_BASE + "/contact", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    name: name.value.trim(),
-                    email: email.value.trim(),
-                    subject: (subject.value || "New message from contact form").trim(),
-                    message: message.value.trim()
-                })
-            });
+        const ownerEmail = contactForm.dataset.recipient || "contact@healthmanagement.com";
+        const mailSubject = (subject.value || "New message from contact form").trim();
+        const mailBody = [
+            "New customer enquiry from Health Management",
+            "",
+            "Name: " + name.value.trim(),
+            "Email: " + email.value.trim(),
+            "Subject: " + mailSubject,
+            "",
+            "Message:",
+            message.value.trim()
+        ].join("\n");
 
-            if (!response.ok) {
-                let detail = t("genericError", "Something went wrong sending your message.");
-                try {
-                    const data = await response.json();
-                    if (data && data.detail) detail = data.detail;
-                } catch (e) {
-                    /* no JSON body */
-                }
-                throw new Error(detail);
-            }
+        const mailtoUrl =
+            "mailto:" + encodeURIComponent(ownerEmail) +
+            "?subject=" + encodeURIComponent("[Contact Form] " + mailSubject) +
+            "&body=" + encodeURIComponent(mailBody);
 
-            showMessage(t("success", "Message sent! We'll get back to you soon."), "success");
-            contactForm.reset();
-        } catch (err) {
-            const msg =
-                err.message === "Failed to fetch"
-                    ? t("unreachable", "Can't reach the server right now. The backend may not be deployed yet — please try again later.")
-                    : err.message;
-            showMessage(msg, "error");
-        } finally {
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalLabel;
-            }
+        window.location.href = mailtoUrl;
+        showMessage(t("success", "Your email app is open. Please press Send so we receive your enquiry."), "success");
+
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalLabel;
         }
     });
 });
