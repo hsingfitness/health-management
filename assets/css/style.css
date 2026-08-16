@@ -1191,6 +1191,27 @@ h1{
 
 }
 
+.message-delivery-flow{
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    margin-bottom:24px;
+    color:#111;
+    font-weight:600;
+    line-height:1.2;
+
+}
+
+.message-delivery-flow span:nth-child(even){
+
+    color:#6B7280;
+    font-size:20px;
+    font-weight:700;
+
+}
+
 
 
 .contact-form label{

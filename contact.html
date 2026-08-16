@@ -167,13 +167,12 @@
 <div class="contact-info">
 <h2 data-i18n="contact.getInTouch">Get In Touch</h2>
 <p data-i18n="contact.intro">
-Health Management combines health data, fitness insights, and
-intelligent analysis to support better health decisions.
+Health Management brings together health data, nutrition, fitness insights, and AI-powered analysis to help you better understand your health and make informed lifestyle decisions.
 </p>
 
 <div class="contact-item">
 <h3 data-i18n="contact.emailLabel">Email</h3>
-<p>contact@healthmanagement.com</p>
+<p>hsing3644791@gmail.com</p>
 </div>
 
 <div class="contact-item">
@@ -184,11 +183,12 @@ intelligent analysis to support better health decisions.
 <div class="contact-item">
 <h3 data-i18n="contact.focusLabel">Our Focus</h3>
 <ul>
-<li data-i18n="contact.focus1">AI Health Assessment</li>
-<li data-i18n="contact.focus2">Personalised Health Reports</li>
-<li data-i18n="contact.focus3">Lifestyle Management</li>
-<li data-i18n="contact.focus4">Fitness &amp; Wellness Integration</li>
-<li data-i18n="contact.focus5">Health Education</li>
+<li data-i18n="contact.focus1">AI-Powered Health Assessment</li>
+<li data-i18n="contact.focus2">Personalised Health Insights</li>
+<li data-i18n="contact.focus3">Diet &amp; Nutrition Management</li>
+<li data-i18n="contact.focus4">Lifestyle &amp; Wellness Management</li>
+<li data-i18n="contact.focus5">Fitness &amp; Health Integration</li>
+<li data-i18n="contact.focus6">Health Education &amp; Guidance</li>
 </ul>
 </div>
 
@@ -199,19 +199,23 @@ intelligent analysis to support better health decisions.
 
 <h2 data-i18n="contact.sendMessage">Send A Message</h2>
 
-<form id="contact-form">
+
+<form id="contact-form" action="https://api.web3forms.com/submit" method="POST" data-recipient="hsing3644791@gmail.com">
+<input type="hidden" name="access_key" value="c9397c69-e4fc-4631-b821-acb3e89da9e2">
+<input type="hidden" name="from_name" value="Health Management Website">
+<input type="checkbox" name="botcheck" class="hidden" style="display:none;" tabindex="-1" autocomplete="off">
 
 <label for="name" data-i18n="contact.nameLabel">Name</label>
-<input type="text" id="name" name="name" placeholder="Your name" data-i18n-placeholder="contact.namePlaceholder">
+<input type="text" id="name" name="name" placeholder="Your name" data-i18n-placeholder="contact.namePlaceholder" required>
 
 <label for="email" data-i18n="contact.emailFieldLabel">Email</label>
-<input type="email" id="email" name="email" placeholder="Your email address" data-i18n-placeholder="contact.emailPlaceholder">
+<input type="email" id="email" name="email" placeholder="Your email address" data-i18n-placeholder="contact.emailPlaceholder" required>
 
 <label for="subject" data-i18n="contact.subjectLabel">Subject</label>
 <input type="text" id="subject" name="subject" placeholder="Message subject" data-i18n-placeholder="contact.subjectPlaceholder">
 
 <label for="message" data-i18n="contact.messageLabel">Message</label>
-<textarea id="message" name="message" rows="6"></textarea>
+<textarea id="message" name="message" rows="6" required></textarea>
 
 <button type="submit"><span data-i18n="contact.submit">Send Message</span> &rarr;</button>
 
